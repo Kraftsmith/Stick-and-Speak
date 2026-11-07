@@ -13,28 +13,24 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: app.stickandspeak.kids
-      node: 20
+      node: 22
       xcode: latest
       vars:
-        XCODE_WORKSPACE: "app/ios/App/App.xcworkspace"
+        XCODE_PROJECT: "app/ios/App/App.xcodeproj"
         XCODE_SCHEME: "App"
     scripts:
       - name: Install dependencies
         script: cd app && npm ci
       - name: Web assets, artwork, voice clips into the iOS project
-        script: |
-          cd app
-          cp ../prototype/index.html www/index.html
-          rm -rf www/img www/audio && cp -r ../prototype/img www/img && cp -r ../prototype/audio www/audio
-          npx cap sync ios
+        script: cd app && npm run sync:ios
       - name: Signing profiles
-        script: xcode-project use-profiles
+        script: xcode-project use-profiles --project "$XCODE_PROJECT"
       - name: Build number
         script: |
           cd app/ios/App
           agvtool new-version -all $(($(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0) + 1))
       - name: Archive
-        script: xcode-project build-ipa --workspace "$XCODE_WORKSPACE" --scheme "$XCODE_SCHEME"
+        script: xcode-project build-ipa --project "$XCODE_PROJECT" --scheme "$XCODE_SCHEME"
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log

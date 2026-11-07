@@ -12,12 +12,31 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Stick & Speak">
 <meta name="theme-color" content="#FFB648">
+<script>
+  // Capacitor exposes the native platform before the page starts rendering.
+  // The query parameter is only a local preview hook and never affects Android.
+  (() => {
+    const capacitor = globalThis.Capacitor;
+    const preview = new URLSearchParams(location.search).get('platform') === 'ios';
+    const nativeIOS = capacitor && typeof capacitor.getPlatform === 'function' && capacitor.getPlatform() === 'ios';
+    if (preview || nativeIOS) document.documentElement.classList.add('ios-fullscreen');
+  })();
+</script>
 <style>
   * { box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; height: 100%; background: #2b2540; overflow: hidden;
+  :root { --stage-width: 1280px; --stage-height: 800px; --content-offset: 0px;
+    --safe-top: 0px; --safe-right: 0px; --safe-bottom: 0px; --safe-left: 0px; }
+  html, body { margin: 0; width: 100%; height: 100%; min-height: 100%; background: #2b2540; overflow: hidden;
+    overscroll-behavior: none; -webkit-text-size-adjust: 100%;
     font-family: "Nunito", "Segoe UI", system-ui, sans-serif; }
-  #wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
-  #stage { position: relative; width: 1280px; height: 800px; flex: none; transform-origin: center center;
+  body { position: fixed; inset: 0; touch-action: none; }
+  /* Keep every control inside the iPhone's notch, rounded corners and home-indicator area. */
+  #wrap { position: fixed;
+    top: env(safe-area-inset-top, 0px); right: env(safe-area-inset-right, 0px);
+    bottom: env(safe-area-inset-bottom, 0px); left: env(safe-area-inset-left, 0px);
+    display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  #stage { position: relative; width: var(--stage-width); height: var(--stage-height); flex: none; transform-origin: center center;
+    contain: layout paint style; isolation: isolate; will-change: transform;
     border-radius: 28px; overflow: hidden; background: #fff8ec; box-shadow: 0 20px 60px rgba(0,0,0,.4); touch-action: none; }
   .screen { position: absolute; inset: 0; display: none; }
   .screen.on { display: block; }
@@ -548,9 +567,53 @@
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
   }
+
+  /*
+   * iOS uses an adaptive logical canvas: its height stays at 800 game units,
+   * while its width follows the iPhone's real landscape aspect ratio. This
+   * keeps artwork edge-to-edge without stretching controls or showing bars.
+   * Android keeps the original fixed 1280 x 800 canvas above.
+   */
+  #safe-probe { position: fixed; inset: 0; visibility: hidden; pointer-events: none;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+      env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); }
+  html.ios-fullscreen, html.ios-fullscreen body { background: #fffdf5; }
+  html.ios-fullscreen #wrap { inset: 0; display: block; background: none; }
+  html.ios-fullscreen #stage { position: absolute; left: 0; top: 0; width: var(--stage-width); transform-origin: top left;
+    border-radius: 0; background: transparent; box-shadow: none; }
+  html.ios-fullscreen #home { background-size: cover, auto, auto; background-position: center; }
+  html.ios-fullscreen .scene { background-size: cover; background-position: center; }
+
+  /* Centre fixed-size activities inside the wider iOS canvas. */
+  html.ios-fullscreen .icard { left: calc(290px + var(--content-offset)); }
+  html.ios-fullscreen .next { left: calc(1080px + var(--content-offset)); right: auto; }
+  html.ios-fullscreen .board,
+  html.ios-fullscreen .lvl,
+  html.ios-fullscreen .pname { left: calc(120px + var(--content-offset)); }
+  html.ios-fullscreen .tray { left: calc(760px + var(--content-offset)); }
+  html.ios-fullscreen .tcard { left: calc(340px + var(--content-offset)); }
+  html.ios-fullscreen .tspk { left: calc(170px + var(--content-offset)); }
+  html.ios-fullscreen .tclear { left: calc(990px + var(--content-offset)); right: auto; }
+  html.ios-fullscreen .tcard.wide { left: calc(100px + var(--content-offset)); }
+  html.ios-fullscreen #trace.wide .tspk,
+  html.ios-fullscreen #trace.wide .tclear { left: calc(1000px + var(--content-offset)); }
+  html.ios-fullscreen .scenetabs { left: calc(140px + var(--content-offset)); }
+
+  /* Artwork fills the display; only tappable controls avoid unsafe edges. */
+  html.ios-fullscreen .back { top: calc(24px + var(--safe-top)); left: calc(28px + var(--safe-left)); }
+  html.ios-fullscreen .mute { top: calc(24px + var(--safe-top)); right: calc(28px + var(--safe-right)); }
+  html.ios-fullscreen .coins { top: calc(24px + var(--safe-top)); right: calc(124px + var(--safe-right)) !important; }
+  html.ios-fullscreen .lock { left: calc(28px + var(--safe-left)); bottom: calc(26px + var(--safe-bottom)); }
+  html.ios-fullscreen .collbtn { right: calc(42px + var(--safe-right)); bottom: calc(34px + var(--safe-bottom)); }
+  html.ios-fullscreen .trash { right: calc(30px + var(--safe-right)); }
+  html.ios-fullscreen .shelf { padding-left: calc(30px + var(--safe-left)); padding-right: calc(30px + var(--safe-right)); }
+  html.ios-fullscreen .dots { bottom: calc(36px + var(--safe-bottom)); }
+  html.ios-fullscreen .idots { bottom: calc(50px + var(--safe-bottom)); }
+  html.ios-fullscreen .note { right: calc(20px + var(--safe-right)); bottom: calc(10px + var(--safe-bottom)); }
 </style>
 </head>
 <body>
+<div id="safe-probe" aria-hidden="true"></div>
 <div id="wrap"><div id="stage">
 
   <button class="mute" id="mute" aria-label="Sound on/off"></button>
@@ -894,13 +957,62 @@ const praise = () => one(PRAISE);   // the name is never spoken: it is shown on 
 
 /* ================= helpers ================= */
 const $ = id => document.getElementById(id);
+const wrap = $('wrap');
 const stage = $('stage');
+const root = document.documentElement;
+const safeProbe = $('safe-probe');
+const IOS_FULLSCREEN = root.classList.contains('ios-fullscreen');
+const STAGE_WIDTH = 1280, STAGE_HEIGHT = 800;
 let scale = 1;
-function fit() { scale = Math.min(innerWidth / 1280, innerHeight / 800); stage.style.transform = `scale(${scale})`; }
-addEventListener('resize', fit); fit();
-function pt(ev) { const r = stage.getBoundingClientRect(); return { x: (ev.clientX - r.left) / scale, y: (ev.clientY - r.top) / scale }; }
-function rectIn(el) { const r = el.getBoundingClientRect(), s = stage.getBoundingClientRect();
-  return { x:(r.left-s.left)/scale, y:(r.top-s.top)/scale, w:r.width/scale, h:r.height/scale }; }
+let stageWidth = STAGE_WIDTH;
+let fitPending = false;
+const currentStageWidth = () => stageWidth;
+const contentOffset = () => (stageWidth - STAGE_WIDTH) / 2;
+function fit() {
+  const viewport = wrap.getBoundingClientRect();
+  const visibleWidth = window.visualViewport ? Math.min(viewport.width, visualViewport.width) : viewport.width;
+  const visibleHeight = window.visualViewport ? Math.min(viewport.height, visualViewport.height) : viewport.height;
+  if (IOS_FULLSCREEN) {
+    const next = visibleHeight / STAGE_HEIGHT;
+    scale = Number.isFinite(next) && next > 0 ? next : 1;
+    stageWidth = Math.max(STAGE_WIDTH, visibleWidth / scale);
+  } else {
+    const next = Math.min(visibleWidth / STAGE_WIDTH, visibleHeight / STAGE_HEIGHT);
+    scale = Number.isFinite(next) && next > 0 ? next : 1;
+    stageWidth = STAGE_WIDTH;
+  }
+  root.style.setProperty('--stage-width', stageWidth + 'px');
+  root.style.setProperty('--content-offset', contentOffset() + 'px');
+  stage.style.transform = `scale(${scale})`;
+  if (IOS_FULLSCREEN) {
+    const safe = getComputedStyle(safeProbe);
+    const logicalInset = property => (parseFloat(safe.getPropertyValue(property)) || 0) / scale;
+    root.style.setProperty('--safe-top', logicalInset('padding-top') + 'px');
+    root.style.setProperty('--safe-right', logicalInset('padding-right') + 'px');
+    root.style.setProperty('--safe-bottom', logicalInset('padding-bottom') + 'px');
+    root.style.setProperty('--safe-left', logicalInset('padding-left') + 'px');
+  }
+}
+function queueFit() {
+  if (fitPending) return;
+  fitPending = true;
+  requestAnimationFrame(() => { fitPending = false; fit(); });
+}
+addEventListener('resize', queueFit, { passive: true });
+addEventListener('orientationchange', queueFit, { passive: true });
+if (window.visualViewport) visualViewport.addEventListener('resize', queueFit, { passive: true });
+if (window.ResizeObserver) new ResizeObserver(queueFit).observe(wrap);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(queueFit);
+fit();
+function pt(ev) {
+  const r = stage.getBoundingClientRect();
+  return { x: (ev.clientX - r.left) * stageWidth / r.width, y: (ev.clientY - r.top) * STAGE_HEIGHT / r.height };
+}
+function rectIn(el) {
+  const r = el.getBoundingClientRect(), s = stage.getBoundingClientRect();
+  return { x:(r.left-s.left)*stageWidth/s.width, y:(r.top-s.top)*STAGE_HEIGHT/s.height,
+    w:r.width*stageWidth/s.width, h:r.height*STAGE_HEIGHT/s.height };
+}
 const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const pick = (a, n) => shuffle(a).slice(0, n);
 const one = a => a[Math.random() * a.length | 0];
@@ -1208,7 +1320,7 @@ function confetti() {
   for (let i = 0; i < 26; i++) {
     const c = document.createElement('div'); c.className = 'confetti' + (i % 2 ? ' round' : '');
     c.style.background = colors[i % colors.length];
-    c.style.left = Math.random() * 1240 + 'px'; c.style.top = (-60 - Math.random() * 120) + 'px';
+    c.style.left = Math.random() * Math.max(1, currentStageWidth() - 40) + 'px'; c.style.top = (-60 - Math.random() * 120) + 'px';
     c.style.animationDelay = Math.random() * .4 + 's';
     stage.appendChild(c); setTimeout(() => c.remove(), 2000);
   }
@@ -1310,7 +1422,7 @@ function renderPath() {
   }).join('') + '</div>';
   // centre the current lesson
   const box = $('islands'), target = box.querySelector(`.ln[data-i="${Math.min(cur, T.lessons.length - 1)}"]`);
-  box.scrollLeft = target.parentElement.offsetLeft - 1280 / 2 + 54;
+  box.scrollLeft = target.parentElement.offsetLeft - currentStageWidth() / 2 + 54;
   box.querySelectorAll('.ln').forEach(b => b.onclick = () => {
     if (box._dragged) return;
     const i = +b.dataset.i;
@@ -1875,7 +1987,7 @@ function renderAlbum() {
     sceneId = set.id; sfx.pop(); renderAlbum();
   });
   const sc = $('scene'); sc.className = 'scene ' + SCENES.find(s => s.id === sceneId).css; sc.innerHTML = '';
-  SCENES.find(s => s.id === sceneId).deco.forEach(([e, x, y, f]) => sc.innerHTML += `<div class="deco" style="left:${x}px;top:${y}px;font-size:${f}px">${e}</div>`);
+  SCENES.find(s => s.id === sceneId).deco.forEach(([e, x, y, f]) => sc.innerHTML += `<div class="deco" style="left:calc(${x}px + var(--content-offset));top:${y}px;font-size:${f}px">${e}</div>`);
   sceneData().forEach(it => sc.appendChild(placedEl(it)));
   hideTools();
   if (timeUp()) { renderShelf(); say(ru('Стикеры спят. Позови ' + parentAcc() + ', чтобы поиграть ещё.')); return; }
@@ -1901,7 +2013,7 @@ function placedEl(it) {
 }
 function applyT(el) {
   const it = el._it;
-  el.style.left = it.x + 'px'; el.style.top = it.y + 'px';
+  el.style.left = `calc(${it.x}px + var(--content-offset))`; el.style.top = it.y + 'px';
   el.style.transform = `translate(-50%,-50%) rotate(${it.r}deg) scale(${it.f ? -it.s : it.s}, ${it.s})`;
   el.style.zIndex = it.z;
 }
@@ -1926,9 +2038,10 @@ function dragFromShelf(t) {
   const up = ev => {
     if (!ghost) return; const q = pt(ev); ghost.remove(); ghost = null;
     const k = t.dataset.k;
-    if (q.y < 600 && q.y > 0 && q.x > 0 && q.x < 1280 && S.inv[k] > 0) {
+    const localX = q.x - contentOffset();
+    if (q.y < 600 && q.y > 0 && localX > 0 && localX < STAGE_WIDTH && S.inv[k] > 0) {
       const data = sceneData();
-      const it = { k, x: q.x, y: q.y, s: 1, r: 0, f: false, z: data.reduce((m, i) => Math.max(m, i.z), 0) + 1 };
+      const it = { k, x: localX, y: q.y, s: 1, r: 0, f: false, z: data.reduce((m, i) => Math.max(m, i.z), 0) + 1 };
       data.push(it); S.inv[k]--; save();
       const el = placedEl(it); $('scene').appendChild(el);
       el.animate([{ scale: .3 }, { scale: 1.15 }, { scale: 1 }], { duration: 300 });
@@ -1956,7 +2069,7 @@ function dragPlaced(el) {
     ev.stopPropagation(); capture(el, ev);
     const q = pt(ev); ptrs.set(ev.pointerId, q);
     hideTools();
-    if (ptrs.size === 1) { off = { x: q.x - el._it.x, y: q.y - el._it.y }; moved = false; startQ = q; trash.classList.add('on'); }
+    if (ptrs.size === 1) { off = { x: q.x - contentOffset() - el._it.x, y: q.y - el._it.y }; moved = false; startQ = q; trash.classList.add('on'); }
     if (ptrs.size === 2) {
       const [a, b] = [...ptrs.values()];
       pinch = { d: Math.hypot(b.x - a.x, b.y - a.y), ang: Math.atan2(b.y - a.y, b.x - a.x), s: el._it.s, r: el._it.r };
@@ -1975,7 +2088,7 @@ function dragPlaced(el) {
     }
     if (!off) return;
     if (Math.hypot(q.x - startQ.x, q.y - startQ.y) > 8) moved = true;
-    el._it.x = Math.max(0, Math.min(1280, q.x - off.x)); el._it.y = Math.max(0, Math.min(620, q.y - off.y));
+    el._it.x = Math.max(0, Math.min(STAGE_WIDTH, q.x - contentOffset() - off.x)); el._it.y = Math.max(0, Math.min(620, q.y - off.y));
     trash.classList.toggle('hot', overTrash(q));
     applyT(el);
   });
@@ -2008,9 +2121,9 @@ function select(el) {
   else if (r.y + r.h + GAP + H <= BOTTOM) y = r.y + r.h + GAP;
   else {
     y = r.y + r.h / 2 - H / 2;
-    x = r.x + r.w + GAP + W <= 1270 ? r.x + r.w + GAP : r.x - GAP - W;
+    x = r.x + r.w + GAP + W <= currentStageWidth() - 10 ? r.x + r.w + GAP : r.x - GAP - W;
   }
-  t.style.left = Math.max(10, Math.min(1270 - W, x)) + 'px';
+  t.style.left = Math.max(10, Math.min(currentStageWidth() - 10 - W, x)) + 'px';
   t.style.top = Math.max(TOP, Math.min(BOTTOM - H, y)) + 'px';
 }
 function hideTools() { $('tools').classList.remove('on'); document.querySelectorAll('.placed.sel').forEach(e => e.classList.remove('sel')); selected = null; }
@@ -2147,7 +2260,7 @@ if (S.day !== today()) {
   S.day = today(); S.usedMs = 0; save();
   if (!first) setTimeout(() => {
     overlay(`<div class="bigpic">${I.coin}</div><div class="gain">+${ECON.daily} ${I.coin}</div><div class="row"><button class="btn orange" id="hi">Hi!</button></div>`);
-    $('hi').onclick = () => { closeOverlay(); addCoins(ECON.daily, { x: 600, y: 400 }); say('Монетки за то, что пришёл!'); };
+    $('hi').onclick = () => { closeOverlay(); addCoins(ECON.daily, { x: currentStageWidth() / 2, y: 400 }); say('Монетки за то, что пришёл!'); };
   }, 400);
 }
 </script>

@@ -2,5 +2,10 @@
   "appId": "app.stickandspeak.kids",
   "appName": "Stick & Speak",
   "webDir": "www",
+  "backgroundColor": "#344b51",
+  "ios": {
+    "contentInset": "never",
+    "preferredContentMode": "mobile"
+  },
   "android": { "allowMixedContent": false }
 }
