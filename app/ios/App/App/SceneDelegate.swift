@@ -1,12 +1,29 @@
 import UIKit
 import Capacitor
 
-/// Full-screen presentation tuned for a landscape game on modern iPhones.
-/// The home indicator remains available with a swipe, but stays out of the
-/// play area and accidental edge gestures require an intentional second swipe.
-private final class GameBridgeViewController: CAPBridgeViewController {
+/// Full-screen container tuned for a landscape game on modern iPhones.
+/// Keep Capacitor as a child because it doesn't expose its home-indicator
+/// preference for further overriding outside the Capacitor module.
+private final class GameViewController: UIViewController {
+    private let bridgeViewController = CAPBridgeViewController()
+
     override var prefersHomeIndicatorAutoHidden: Bool { true }
     override var preferredScreenEdgesDeferringSystemGestures: UIRectEdge { .bottom }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        addChild(bridgeViewController)
+        bridgeViewController.view.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(bridgeViewController.view)
+        NSLayoutConstraint.activate([
+            bridgeViewController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            bridgeViewController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            bridgeViewController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            bridgeViewController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        bridgeViewController.didMove(toParent: self)
+    }
 }
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
@@ -16,7 +33,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         guard let windowScene = scene as? UIWindowScene else { return }
 
         window = UIWindow(windowScene: windowScene)
-        window?.rootViewController = GameBridgeViewController()
+        window?.rootViewController = GameViewController()
         window?.makeKeyAndVisible()
 
         SceneDelegateProxy.shared.scene(scene, willConnectTo: session, options: connectionOptions)
