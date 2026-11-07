@@ -1,0 +1,25 @@
+# dependencies and build output
+node_modules/
+app/android/build/
+app/android/app/build/
+app/android/.gradle/
+app/android/local.properties
+app/ios/App/Pods/
+app/ios/App/App/public/
+app/ios/App/build/
+app/ios/DerivedData/
+app/www/index.html
+app/www/img/
+app/www/audio/
+stick-and-speak.apk
+*.ipa
+
+# generation logs next to the sticker sources
+Art/stickers/**/*.log
+Art/stickers/**/*.last.txt
+
+# never commit secrets
+.env
+*.p12
+*.mobileprovision
+AuthKey_*.p8

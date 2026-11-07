@@ -1,0 +1,6 @@
+{
+  "appId": "app.stickandspeak.kids",
+  "appName": "Stick & Speak",
+  "webDir": "www",
+  "android": { "allowMixedContent": false }
+}
