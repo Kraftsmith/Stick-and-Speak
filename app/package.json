@@ -1,1 +1,20 @@
-{"name":"stick-and-speak","version":"0.1.0","private":true,"dependencies":{"@capacitor-community/text-to-speech":"^8.0.2","@capacitor/android":"^8.6.0","@capacitor/core":"^8.6.0","@capacitor/ios":"^8.6.0"},"devDependencies":{"@capacitor/cli":"^8.6.0"}}
+{
+  "name": "stick-and-speak",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "prepare:web": "node scripts/sync-web-assets.mjs",
+    "check:web": "node scripts/check-web.mjs",
+    "sync:ios": "npm run prepare:web && cap sync ios",
+    "open:ios": "npm run sync:ios && cap open ios"
+  },
+  "dependencies": {
+    "@capacitor-community/text-to-speech": "^8.0.2",
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/ios": "^8.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.0"
+  }
+}

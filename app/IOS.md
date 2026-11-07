@@ -11,20 +11,23 @@ The iOS project lives in `app/ios/` (Capacitor). It uses the same `www/` as Andr
 
 ```
 cd app
-bash build.sh          # Android APK; also runs art.js and copies www
-npx cap sync ios       # copies www into ios/App/App/public and updates plugins
+npm ci
+npm run sync:ios       # recreates www, copies it into iOS and updates plugins
 ```
+
+`app/www/` and `app/ios/App/App/public/` are generated output and must not be edited or committed. The source of truth is `prototype/`.
 
 ## Build on a Mac
 
 ```
 cd app
-npm install
-npx cap sync ios
-npx cap open ios       # opens Xcode
+npm ci
+npm run open:ios       # prepares assets, syncs Capacitor and opens Xcode
 ```
 
 In Xcode: select the team under Signing & Capabilities, pick a device or simulator, Run. For TestFlight: Product → Archive → Distribute.
+
+The game viewport uses `viewport-fit=cover` together with CSS safe-area insets. Keep those declarations when changing the page shell: they prevent controls from sitting under the Dynamic Island, rounded corners or home indicator in landscape.
 
 ## Build without a Mac
 

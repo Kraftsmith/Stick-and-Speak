@@ -4,9 +4,8 @@ set -e
 cd "$(dirname "$0")"
 export JAVA_HOME="/c/Program Files/Microsoft/jdk-21.0.13.21-hotspot"
 export PATH="$JAVA_HOME/bin:$PATH"
-node art.js && cp ../prototype/index.html www/index.html
-rm -rf www/img && cp -r ../prototype/img www/img
-rm -rf www/audio && cp -r ../prototype/audio www/audio
+node art.js
+npm run prepare:web
 npx cap sync android
 (cd android && ./gradlew.bat assembleDebug -q)
 cp android/app/build/outputs/apk/debug/app-debug.apk ../stick-and-speak.apk
