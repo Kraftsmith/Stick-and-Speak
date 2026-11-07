@@ -5,6 +5,7 @@
   "scripts": {
     "prepare:web": "node scripts/sync-web-assets.mjs",
     "check:web": "node scripts/check-web.mjs",
+    "generate:ios-icon": "node scripts/generate-ios-icon.mjs",
     "sync:ios": "npm run prepare:web && cap sync ios",
     "open:ios": "npm run sync:ios && cap open ios"
   },
