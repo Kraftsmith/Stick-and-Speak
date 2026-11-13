@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Stick & Speak</title>
+<!-- as a web app on a phone: full screen from the home screen, landscape, app icon -->
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Stick & Speak">
+<meta name="theme-color" content="#FFB648">
+<link rel="preload" as="image" href="img/splash.jpg">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/home.css">
+<link rel="stylesheet" href="css/learn.css">
+<link rel="stylesheet" href="css/lesson.css">
+<link rel="stylesheet" href="css/album.css">
+<link rel="stylesheet" href="css/collection.css">
+<link rel="stylesheet" href="css/parent.css">
+<link rel="stylesheet" href="css/startup.css">
+<script type="module" src="js/main.js"></script>
+</head>
+<body>
+<!-- the launch screen: first in the markup, on screen before any script runs; js/startup.js takes it away -->
+<div id="splash" aria-hidden="true"></div>
+<script>
+// Inside the apps the native launch screen is still up (launchAutoHide: false): take it away when this one has its
+// picture. A plain script, so it runs before the modules and whatever happens in them. No requestAnimationFrame: Android
+// holds back drawing until the native screen is told to go.
+(function () {
+  var C = window.Capacitor; if (!C || !C.nativePromise) return;
+  var done = false, hide = function () { if (!done) { done = true; C.nativePromise('SplashScreen', 'hide', {}).catch(function () {}); } };
+  var img = new Image(); img.src = 'img/splash.jpg';
+  if (img.decode) img.decode().then(hide, hide); else img.onload = img.onerror = hide;
+  setTimeout(hide, 1500);
+})();
+</script>
+<div id="wrap"><div id="stage">
+
+  <button class="mute" id="mute" aria-label="Sound on/off"></button>
+  <div class="coins" id="coins"><span class="c"><svg class="ic" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="26" r="20" fill="#c98a1a"/><circle cx="24" cy="23" r="20" fill="#f3b63a"/><circle cx="24" cy="23" r="14" fill="#ffd25f"/><path d="M24 14l2.6 5.4 6 .9-4.3 4.2 1 5.9-5.3-2.8-5.3 2.8 1-5.9-4.3-4.2 6-.9z" fill="#fff4c4"/></svg></span><span id="coinN">0</span></div>
+  <button class="back" id="back" style="display:none" aria-label="Back"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M38 24H11M22 12L10 24l12 12" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  <div class="note" id="note"></div>
+
+  <!-- the 1280×800 frame: every screen is drawn in it (js/stage.js) -->
+  <div id="frame">
+
+  <!-- HOME -->
+  <section class="screen on" id="home">
+    <div class="sun">☀️</div>
+    <div class="hello" id="hello"></div>
+    <div class="cloud" style="top:40px">☁️</div>
+    <div class="cloud" style="top:120px; animation-delay:-14s">☁️</div>
+    <div class="homebtns">
+      <button class="big b-play" id="playBtn"><span class="ico"><svg viewBox="0 0 120 120" aria-hidden="true">
+  <path d="M22 98 C40 98 40 70 58 70 S78 40 96 34" fill="none" stroke="#e0b27a" stroke-width="9" stroke-linecap="round" stroke-dasharray="1 13"/>
+  <g><circle cx="22" cy="100" r="16" fill="#5aa86a"/><circle cx="22" cy="97" r="16" fill="#7fd08a"/>
+    <path d="M14.5 97l5.5 5.5 9.5-11" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g><circle cx="58" cy="73" r="17" fill="#5aa86a"/><circle cx="58" cy="70" r="17" fill="#7fd08a"/>
+    <path d="M50 70l6 6 10-11" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></g>
+  <g><circle cx="96" cy="37" r="23" fill="#d9692c"/><circle cx="96" cy="33" r="23" fill="#ff9b4a"/>
+    <path d="M96 20l4.1 8.4 9.2 1.3-6.7 6.5 1.6 9.2-8.2-4.3-8.2 4.3 1.6-9.2-6.7-6.5 9.2-1.3z" fill="#fff4c4" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></g>
+</svg></span>Play</button>
+      <button class="big b-stick" id="stickBtn"><span class="ico"><svg viewBox="0 0 120 120" aria-hidden="true">
+  <rect x="12" y="20" width="96" height="80" rx="16" fill="#3e8f86" transform="translate(0 4)"/>
+  <clipPath id="albClip"><rect x="12" y="20" width="96" height="80" rx="16"/></clipPath>
+  <g clip-path="url(#albClip)">
+    <rect x="12" y="20" width="96" height="80" fill="#bfe9f5"/>
+    <circle cx="34" cy="40" r="10" fill="#ffd34d"/>
+    <path d="M12 78 C34 62 52 66 70 74 S96 70 108 62 V100 H12z" fill="#8fd27a"/>
+    <path d="M12 88 C40 78 70 86 108 80 V100 H12z" fill="#6cbd62"/>
+    <path d="M64 100 C66 90 76 84 86 82 L92 100z" fill="#f2dcae"/>
+  </g>
+  <rect x="12" y="20" width="96" height="80" rx="16" fill="none" stroke="#fff" stroke-width="4"/>
+  <!-- a heart sticker pressed onto the page, with a soft shadow and a white die-cut edge -->
+  <path d="M80 66c-13-8.5-18-15-18-21.5a9 9 0 0 1 18-3.5 9 9 0 0 1 18 3.5c0 6.5-5 13-18 21.5z" fill="#2b5c5a" opacity=".25" transform="translate(3 5)"/>
+  <path d="M80 66c-13-8.5-18-15-18-21.5a9 9 0 0 1 18-3.5 9 9 0 0 1 18 3.5c0 6.5-5 13-18 21.5z" fill="#fff" stroke="#fff" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M80 66c-13-8.5-18-15-18-21.5a9 9 0 0 1 18-3.5 9 9 0 0 1 18 3.5c0 6.5-5 13-18 21.5z" fill="#ff6f8f"/>
+  <ellipse cx="72" cy="46" rx="4" ry="2.6" fill="#fff" opacity=".7" transform="rotate(-30 72 46)"/>
+</svg></span>Stick</button>
+    </div>
+    <button class="collbtn" data-go="collection"><span><svg class="ic" viewBox="0 0 48 48" aria-hidden="true"><path d="M14 40h20v4H14z" fill="#c98a1a"/><path d="M14 38h20v4H14z" fill="#e9a832"/><path d="M20 30h8v9h-8z" fill="#e9a832"/><path d="M12 6h24v12a12 12 0 0 1-24 0z" fill="#e9a832"/><path d="M12 4h24v12a12 12 0 0 1-24 0z" fill="#ffd25f"/><path d="M12 9H6v4a7 7 0 0 0 7 7M36 9h6v4a7 7 0 0 1-7 7" fill="none" stroke="#e9a832" stroke-width="4"/><path d="M19 9v8" stroke="#fff4c4" stroke-width="3" stroke-linecap="round"/></svg></span><em id="collN" style="font-style:normal">0/36</em></button>
+    <button class="lock" data-go="parent" title="Parents"><svg class="ic" viewBox="0 0 48 48" aria-hidden="true"><path d="M15 22v-6a9 9 0 0 1 18 0v6" fill="none" stroke="#8d879b" stroke-width="5" stroke-linecap="round"/><rect x="9" y="22" width="30" height="22" rx="7" fill="#4f4a5e"/><rect x="9" y="20" width="30" height="22" rx="7" fill="#6d6681"/><circle cx="24" cy="30" r="3.5" fill="#fff"/><rect x="22.3" y="31" width="3.4" height="6" rx="1.5" fill="#fff"/></svg></button>
+  </section>
+
+
+  <!-- LESSON PATH -->
+  <section class="screen" id="path">
+    <div class="title" id="ptitle"></div>
+    <div class="islands" id="islands"></div>
+  </section>
+
+  <!-- INTRO (cards) -->
+  <section class="screen" id="intro">
+    <div id="icard"></div>
+    <button class="next" id="inext">➜</button>
+    <div class="idots" id="idots"></div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="screen" id="quiz">
+    <div class="streak" id="streak"></div>
+    <div class="prompt" id="prompt"></div>
+    <div class="choices" id="choices"></div>
+    <div class="dots" id="dots"></div>
+  </section>
+
+  <!-- TRACE A LETTER -->
+  <section class="screen" id="trace">
+    <div class="streak" id="tstreak"></div>
+    <button class="speak tspk" id="tspk"><svg class="ic" viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 19h7l10-8v26l-10-8H8z" fill="currentColor"/><path d="M32 18a8 8 0 0 1 0 12M37 13a15 15 0 0 1 0 22"/></svg></button>
+    <div class="tcard" id="tcard"><canvas id="tguide" width="600" height="600"></canvas><canvas id="tink" width="600" height="600"></canvas></div>
+    <button class="tclear" id="tclear">↺</button>
+    <div class="dots" id="tdots"></div>
+  </section>
+
+  <!-- PUZZLE -->
+  <section class="screen" id="puzzle">
+    <div class="lvl" id="lvl"></div>
+    <div class="board" id="board"><div class="ghost" id="ghost"></div></div>
+    <div class="tray" id="tray"></div>
+    <div class="pname" id="pname"></div>
+    <div class="dots" id="pdots"></div>
+  </section>
+
+  <!-- PAIRS (memory game) -->
+  <section class="screen" id="pairs">
+    <button class="speak mspk" id="mspk"></button>
+    <div class="lvl" id="mlvl"></div>
+    <div class="pgrid" id="mgrid"></div>
+    <div class="dots" id="mdots"></div>
+  </section>
+
+  <!-- LINES (Specs/features/Lines.md) -->
+  <section class="screen" id="lines">
+    <button class="speak mspk" id="lspk"></button>
+    <div class="lvl" id="llvl"></div>
+    <div class="lcards" id="lcards"></div>
+    <div class="lgrid" id="lgrid"></div>
+    <div class="dots" id="ldots"></div>
+  </section>
+
+  <!-- RACE (Specs/features/racing.md) -->
+  <section class="screen" id="race">
+    <div class="rside" id="rsideL"></div>
+    <div class="rside r" id="rsideR"></div>
+    <div class="road" id="road">
+      <div class="rlines" id="rlines"></div>
+      <div class="rline start" id="rstart"></div>
+      <div class="rline finish" id="rfinish"></div>
+      <div id="rthings"></div>
+      <div class="rcar" id="rrival"></div>
+      <div class="rcar" id="rme"></div>
+      <div id="rgates"></div>
+    </div>
+    <button class="speak mspk" id="rspk"></button>
+    <div class="lvl" id="rlvl"></div>
+    <div class="rbar"><i></i><b class="rv" id="rbarR"></b><b id="rbarM"></b></div>
+    <button class="rgas" id="rgas" aria-label="Go faster"></button>
+    <div class="rcount" id="rcount"></div>
+    <div class="dots" id="rdots"></div>
+  </section>
+
+  <!-- ALBUM -->
+  <section class="screen" id="album">
+    <div class="scene meadow" id="scene"><div class="page" id="page"></div></div>
+    <div class="scenetabs" id="scenetabs"></div>
+    <div class="tools" id="tools">
+      <button data-t="up" title="Bigger"><svg class="ic" viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 10v28M10 24h28"/></svg></button>
+      <button data-t="down" title="Smaller"><svg class="ic" viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 24h28"/></svg></button>
+      <button data-t="rot" title="Rotate"><svg class="ic" viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M36 24a12 12 0 1 1-4-9"/><path d="M34 6v10H24"/></svg></button>
+      <button data-t="flip" title="Flip"><svg class="ic" viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 24h36M14 15l-8 9 8 9M34 15l8 9-8 9"/></svg></button>
+      <button data-t="del" class="del" title="Back to shelf"><svg class="ic" viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13h32M19 13V8h10v5"/><path d="M12 13l2 28h20l2-28z" fill="currentColor" fill-opacity=".18"/><path d="M20 20v14M28 20v14"/></svg></button>
+    </div>
+    <div class="trash" id="trash"><svg class="ic" viewBox="0 0 48 48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13h32M19 13V8h10v5"/><path d="M12 13l2 28h20l2-28z" fill="currentColor" fill-opacity=".18"/><path d="M20 20v14M28 20v14"/></svg></div>
+    <div class="sleepmsg"><div class="m"><svg class="ic" viewBox="0 0 48 48" aria-hidden="true"><path d="M30 4a20 20 0 1 0 14 34A17 17 0 0 1 30 4z" fill="#e9b94f"/><path d="M28 2a20 20 0 1 0 14 34A17 17 0 0 1 28 2z" fill="#ffe08a"/><circle cx="18" cy="16" r="2.5" fill="#fff6cc"/><circle cx="14" cy="28" r="3.5" fill="#fff6cc"/></svg></div><div class="t">The stickers are sleepy.<br>Come back tomorrow!</div>
+      <button class="btn orange keepon" id="keepon"><svg class="ic" viewBox="0 0 48 48" aria-hidden="true"><path d="M15 22v-6a9 9 0 0 1 18 0v6" fill="none" stroke="#8d879b" stroke-width="5" stroke-linecap="round"/><rect x="9" y="22" width="30" height="22" rx="7" fill="#4f4a5e"/><rect x="9" y="20" width="30" height="22" rx="7" fill="#6d6681"/><circle cx="24" cy="30" r="3.5" fill="#fff"/><rect x="22.3" y="31" width="3.4" height="6" rx="1.5" fill="#fff"/></svg> Keep learning +15 min</button></div>
+    <div class="shelf" id="shelf"></div>
+  </section>
+
+  <!-- COLLECTION -->
+  <section class="screen" id="collection">
+    <div class="title">My Collection</div>
+    <div class="colsets" id="colsets"></div>
+  </section>
+
+  <!-- FIRST RUN: one screen for the grown-up, text only, shown once on a new device -->
+  <section class="screen" id="firstrun">
+    <div class="frcard">
+      <div class="frtitle" id="frTitle"></div>
+      <label class="frrow"><span id="frAsk"></span><input type="text" id="frName" maxlength="12" autocomplete="off"></label>
+      <div class="frrow"><span id="frLangL"></span><span class="frlangs" id="frLangs"></span></div>
+      <div class="frrow fract"><button class="btn orange" id="frStart"></button><button class="frskip" id="frSkip"></button></div>
+      <button class="fracc" id="frAcc" style="display:none"></button>
+    </div>
+  </section>
+
+  <!-- WHO'S PLAYING: at the start, when the device has two or more children -->
+  <section class="screen" id="who">
+    <div class="title" id="whoTitle"></div>
+    <div class="whocards" id="whoCards"></div>
+    <button class="lock" id="whoLock" data-go="parent" title="Parents"></button>
+  </section>
+
+  <!-- PARENT -->
+  <section class="screen" id="parent">
+    <div class="title">For Parents</div>
+    <div class="lockpad" id="lockpad">
+      <div>Tap in order: <b id="lockcode"></b></div>
+      <div class="keys" id="keys"></div>
+    </div>
+    <div class="pstats" id="pstats"></div>
+  </section>
+
+  </div><!-- #frame -->
+
+  <div class="overlay" id="overlay"><div class="card" id="card"></div></div>
+</div></div>
+
+</body>
+</html>

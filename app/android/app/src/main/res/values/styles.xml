@@ -13,12 +13,17 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- the page fills the whole screen, the notch / camera hole included (the page keeps its controls out of
+             the cutout: js/stage.js reads the safe area); Android 15+ does this on its own, older ones need the flag -->
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <!-- the paper colour of the page, so what shows around the web view is never black -->
+        <item name="android:windowBackground">#FFFDF5</item>
     </style>
 
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="android:background">@drawable/splash</item>
-        <item name="windowSplashScreenBackground">@color/ic_launcher_background</item>
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_sticker_fg</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>

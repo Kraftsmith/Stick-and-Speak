@@ -1,0 +1,122 @@
+/* Shared by every screen: the stage, the top bar, buttons, the overlay card, effects. Two layers, in this order:
+   the original rules, then the storybook skin that refines them. */
+* { box-sizing: border-box; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; height: 100%; background: #2b2540; overflow: hidden;
+  font-family: "Nunito", "Segoe UI", system-ui, sans-serif; }
+/* The stage is the whole window, scaled so that the 1280×800 frame fits it (js/stage.js sets the size, the scale and
+   the --bx/--by/--sl/--sr/--st/--sb/--el/--er variables described there). The window's safe area: env() where the
+   browser knows it; Capacitor on Android sets --safe-area-inset-* on <html> instead. */
+:root { --env-left: env(safe-area-inset-left, 0px); --env-right: env(safe-area-inset-right, 0px);
+  --env-top: env(safe-area-inset-top, 0px); --env-bottom: env(safe-area-inset-bottom, 0px); }
+#wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+#stage { position: relative; width: 1280px; height: 800px; flex: none; transform-origin: center center;
+  overflow: hidden; background: #fff8ec; touch-action: none;
+  --bx: 0px; --by: 0px; --sl: 0px; --sr: 0px; --st: 0px; --sb: 0px; --el: 0px; --er: 0px; }
+#frame { position: absolute; left: var(--bx); top: var(--by); width: 1280px; height: 800px; }
+.screen { position: absolute; inset: 0; display: none; z-index: 0; }
+.screen.on { display: block; }
+/* the screen's background runs out to the window's edges; the screen's own box only holds its content */
+.screen::before { content: ""; position: absolute; z-index: -1; inset: calc(0px - var(--by)) calc(0px - var(--bx));
+  background: inherit; pointer-events: none; }
+
+/* top bar */
+.coins { position: absolute; top: 22px; right: 26px; z-index: 50; display: flex; align-items: center; gap: 10px;
+  background: #fff; border-radius: 40px; padding: 8px 22px 8px 10px; font-size: 38px; font-weight: 800; color: #b5770b;
+  box-shadow: 0 4px 0 #e8c88a; }
+.coins .c { font-size: 44px; }
+.coins.bump { animation: bump .35s; }
+@keyframes bump { 50% { transform: scale(1.18); } }
+.back { position: absolute; top: 22px; left: 26px; z-index: 50; width: 84px; height: 84px; border-radius: 50%; border: none;
+  background: #fff; font-size: 44px; box-shadow: 0 5px 0 #d9cbb5; cursor: pointer; }
+.back:active { transform: translateY(4px); box-shadow: 0 1px 0 #d9cbb5; }
+.title { position: absolute; top: 34px; left: 0; right: 0; text-align: center; font-size: 44px; font-weight: 800; color: #5b4636; pointer-events: none; }
+
+/* overlay */
+.overlay { position: absolute; inset: 0; z-index: 80; background: rgba(40,25,70,.55); display: none; align-items: center; justify-content: center; }
+.overlay.on { display: flex; }
+.card { background: #fff; border-radius: 40px; padding: 40px 60px; text-align: center; min-width: 520px; animation: pop .35s; }
+@keyframes pop { from { transform: scale(.6); opacity: 0; } }
+.card .bigpic { font-size: 190px; line-height: 1.1; }
+.card .ename { font-size: 60px; font-weight: 800; color: #7d3fbf; margin-top: -6px; }
+.card .gain { font-size: 70px; font-weight: 800; color: #b5770b; margin: 6px 0 20px; }
+.card .hintbuy { font-size: 36px; font-weight: 800; color: #7d3fbf; margin-bottom: 20px; animation: bump 1s infinite; }
+.card .cnt { font-size: 40px; font-weight: 800; color: #3bb26b; margin-bottom: 16px; }
+.row { display: flex; gap: 24px; justify-content: center; }
+.btn { border: none; border-radius: 30px; padding: 20px 40px; font-family: inherit; font-size: 40px; font-weight: 800; color: #fff; cursor: pointer; }
+.btn:active { transform: translateY(5px); }
+.btn.orange { background: #ff8a3d; box-shadow: 0 7px 0 #c85e1a; }
+.btn.purple { background: #b06cf0; box-shadow: 0 7px 0 #7d3fbf; }
+.btn.gray { background: #bbb; box-shadow: 0 7px 0 #8a8a8a; }
+.btn:disabled { background: #ddd; box-shadow: 0 7px 0 #bbb; color: #999; cursor: default; }
+
+.flycoin { position: absolute; z-index: 90; font-size: 54px; pointer-events: none; transition: left .7s cubic-bezier(.5,-0.3,.6,1), top .7s cubic-bezier(.5,-0.3,.6,1); }
+.confetti { position: absolute; z-index: 85; width: 18px; height: 18px; border-radius: 4px; pointer-events: none; animation: fall 1.4s ease-in forwards; }
+.confetti.round { border-radius: 50%; }
+.ic { width: 1em; height: 1em; display: inline-block; vertical-align: -.16em; flex: none; }
+.speak, .tspk { color: #7a5a1c; }
+.tools button { color: #4a5961; } .tools button.del { color: #b0463a; } .trash { color: #a44b3b; }
+@keyframes fall { to { transform: translateY(700px) rotate(540deg); opacity: 0; } }
+
+.note { position: absolute; bottom: 12px; right: 20px; font-size: 16px; color: rgba(0,0,0,.35); z-index: 99; pointer-events: none; }
+/* Storybook skin. All artwork is local CSS/SVG; interaction geometry stays in stage pixels. */
+:root {
+  --ink: #493c50;
+  --paper: #fffdf5;
+  --muted: #756579;
+  --landscape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 800' preserveAspectRatio='none'%3E%3Cpath fill='%23b9dda2' d='M0 470Q200 340 440 450T900 420T1280 430V800H0Z'/%3E%3Cpath fill='%239acb8d' d='M0 560Q260 420 610 535T1280 490V800H0Z'/%3E%3Cpath fill='%237eb888' d='M0 665Q280 560 600 650T1280 600V800H0Z'/%3E%3Cpath fill='%23f4dfac' d='M580 800Q820 700 700 630Q600 580 680 535Q650 580 760 625Q950 700 830 800Z'/%3E%3Cg fill='none' stroke='%235c9d73' stroke-width='5' stroke-linecap='round'%3E%3Cpath d='M130 670l-8-16m8 16l8-20M1090 700l-8-16m8 16l8-20M340 735l-8-16m8 16l8-20M980 585l-8-16m8 16l8-20M60 560l-8-16m8 16l8-20'/%3E%3C/g%3E%3Cg fill='%23fff5d9'%3E%3Cpath d='M200 622c-22-22 22-22 0 0c22-22 22 22 0 0c22 22-22 22 0 0c-22 22-22-22 0 0M1020 660c-22-22 22-22 0 0c22-22 22 22 0 0c22 22-22 22 0 0c-22 22-22-22 0 0M450 702c-18-18 18-18 0 0c18-18 18 18 0 0c18 18-18 18 0 0c-18 18-18-18 0 0'/%3E%3C/g%3E%3Cg fill='%23e6ac50'%3E%3Ccircle cx='200' cy='622' r='5'/%3E%3Ccircle cx='1020' cy='660' r='5'/%3E%3Ccircle cx='450' cy='702' r='4'/%3E%3C/g%3E%3C/svg%3E");
+}
+html, body { background: var(--paper); font-family: "Arial Rounded MT Bold", "Trebuchet MS", "Segoe UI", system-ui, sans-serif; }
+#wrap { background: var(--paper); }
+#stage { background: var(--paper); }
+button { font-family: inherit; }
+button:focus-visible, [tabindex]:focus-visible { outline: 5px solid #304f91; outline-offset: 6px; }
+button { transition: translate .16s ease, box-shadow .16s ease, background-color .2s ease; }
+button:active:not(:disabled):not(.locked) { translate: 0 4px; }
+.title { top: 38px; color: var(--ink); font-size: 44px; letter-spacing: -1.5px; text-shadow: 0 2px 0 #ffffffb3; }
+/* The top bar sits on the stage: level with the frame's top, at the window's (safe) left and right edges. */
+.mute { position: absolute; top: calc(24px + var(--by)); right: calc(28px + var(--sr)); z-index: 50; width: 78px; height: 78px; border-radius: 50%; cursor: pointer;
+  display: grid; place-items: center; padding: 0; color: var(--ink); background: var(--paper); border: 3px solid #fff; box-shadow: 0 5px 0 #d7d3bd, 0 8px 18px #44535214; }
+.mute svg { width: 44px; height: 44px; }
+.mute.off { background: #f1e3df; }
+.coins { right: calc(124px + var(--sr)) !important; }
+.back { top: calc(24px + var(--by)); left: calc(28px + var(--sl)); width: 78px; height: 78px; padding: 0; place-items: center; }
+.back svg { width: 42px; height: 42px; display: block; }
+.back { color: var(--ink); background: var(--paper); border: 3px solid #fff; box-shadow: 0 5px 0 #d7d3bd, 0 8px 18px #44535214; }
+.coins { top: calc(24px + var(--by)); right: 28px; min-height: 78px; gap: 12px; padding: 7px 25px 7px 8px;
+  border: 3px solid #fff6d5; background: linear-gradient(#fffef5, #fff0be); color: #805312;
+  font-size: 36px; font-variant-numeric: tabular-nums; box-shadow: 0 5px 0 #d7b96f, 0 9px 22px #6953221a; }
+.coins .c { display: grid; place-items: center; width: 58px; height: 58px; font-size: 39px; border-radius: 50%;
+  background: linear-gradient(145deg, #ffe69b, #efb840); box-shadow: inset 0 0 0 3px #f8d477, inset 0 -3px 0 #ce941e; }
+.note { color: #493c507a; font-size: 14px; bottom: calc(10px + var(--sb)); right: calc(20px + var(--sr)); }
+
+.overlay { background: #263942a8; backdrop-filter: blur(6px); }
+.card { position: relative; border: 6px solid #fff; border-radius: 48px; padding: 34px 48px;
+  max-width: 1120px; max-height: 740px; overflow-y: auto; touch-action: pan-y;
+  background: radial-gradient(ellipse at 50% 0, #fff0c4, transparent 58%), var(--paper);
+  box-shadow: 0 12px 0 #cfbc9a, 0 35px 80px #13202e4d; }
+.card .bigpic { font-size: 174px; filter: drop-shadow(0 8px 0 #c6a2571a); }
+.card .ename { color: #725187; font-size: 54px; }
+.card .gain { color: #91631c; font-size: 62px; }
+.card .cnt { color: #35765e; }
+.card .hintbuy { color: #725187; animation: float 5s ease-in-out infinite; }
+.btn { min-height: 84px; min-width: 84px; border: 3px solid #ffffff8c; border-radius: 28px; font-size: 34px; padding: 18px 30px; }
+.btn.orange { color: #673a20; background: linear-gradient(#ffd28c, #ffb16a); box-shadow: 0 6px 0 #c58847; }
+.btn.purple { background: linear-gradient(#9370ae, #76528f); box-shadow: 0 6px 0 #55376b; }
+/* Buttons that lead to a section repeat that section's home card: same colours, icon and label (SPEC 4). */
+.btn.to-play { color: #71401f; background: linear-gradient(150deg, #ffdb8e, #ffb66c); box-shadow: 0 6px 0 #d99a48; }
+.btn.to-stick { color: #24595c; background: linear-gradient(150deg, #c8eee4, #84d1cd); box-shadow: 0 6px 0 #589f9f; }
+.btn.gray { color: #595362; background: #e6dfe7; box-shadow: 0 6px 0 #ada2b2; }
+.btn:disabled { color: #726c68; background: #ddd9d1; box-shadow: 0 6px 0 #b4aea4; }
+.need { background: #e5dccb; box-shadow: inset 0 3px 4px #89735020; }
+.need i, .colset .pb i { background: linear-gradient(#f5d17c, #e8b34a); border-radius: inherit; }
+@keyframes pop { from { transform: scale(.92); opacity: 0; } }
+@keyframes bump { 50% { transform: scale(1.08); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+/* The launch screen (startup.md 3.1): one picture over the whole window, no text, no progress bar. It is outside the
+   stage, so it is right before the scripts have scaled the stage to the window. */
+#splash { position: fixed; inset: 0; z-index: 1000; background: #b7e8e2 url("../img/splash.jpg") center / cover no-repeat; transition: opacity .3s; }
+#splash.out { opacity: 0; pointer-events: none; }

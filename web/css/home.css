@@ -1,0 +1,59 @@
+/* The home screen: the landscape, the two tiles (Play, Stick), the collection and parent buttons. */
+/* home */
+#home { background: linear-gradient(#bfe6ff 0 55%, #9fdc7c 55%); }
+.sun { position: absolute; left: 90px; top: 50px; font-size: 120px; animation: float 4s ease-in-out infinite; }
+.cloud { position: absolute; font-size: 90px; opacity: .95; animation: drift 30s linear infinite; }
+@keyframes drift { from { transform: translateX(-200px); } to { transform: translateX(1500px); } }
+@keyframes float { 50% { transform: translateY(-14px); } }
+.homebtns { position: absolute; left: 0; right: 0; top: 200px; display: flex; justify-content: center; gap: 56px; }
+.big { width: 330px; height: 400px; border: none; border-radius: 40px; cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 14px; font-family: inherit; font-size: 46px; font-weight: 800; color: #fff; }
+.big .ico { font-size: 170px; line-height: 1; }
+.big:active { transform: translateY(8px); }
+.b-play { background: #ff8a3d; box-shadow: 0 12px 0 #c85e1a; animation: hop 2.4s ease-in-out infinite; }
+.b-stick { background: #3fb6e8; box-shadow: 0 12px 0 #1f86b5; }
+@keyframes hop { 0%,80%,100% { transform: translateY(0); } 88% { transform: translateY(-18px); } }
+.lock { position: absolute; left: 26px; bottom: 22px; width: 64px; height: 64px; border-radius: 50%; border: none;
+  background: rgba(255,255,255,.7); font-size: 30px; cursor: pointer; z-index: 60; }
+.collbtn { position: absolute; right: 40px; bottom: 30px; height: 100px; padding: 0 30px 0 20px; border-radius: 50px; border: none;
+  background: #ffd34d; box-shadow: 0 8px 0 #d9a514; font-family: inherit; font-size: 34px; font-weight: 800; color: #7a5800;
+  display: flex; align-items: center; gap: 12px; cursor: pointer; }
+.collbtn span { font-size: 60px; }
+
+/* A little landscape behind two tactile, illustrated tiles. */
+#home { background: var(--landscape), radial-gradient(ellipse at 15% 5%, #fff7d3, transparent 38%), linear-gradient(#bce6e6, #e2f3df 62%, #acd699); }
+.sun { width: 104px; height: 104px; left: 100px; top: 55px; border-radius: 50%; font-size: 0;
+  background: linear-gradient(145deg, #ffeaa0, #f5bf56); border: 7px solid #ffedb0;
+  box-shadow: 0 0 0 16px #fff3bb55, 0 0 0 32px #fff3bb2e; animation: float 8s ease-in-out infinite; }
+.cloud { width: 152px; height: 42px; margin-top: 45px; font-size: 0; border-radius: 60px;
+  background: #fffff4; box-shadow: 0 7px 0 #acd7d930; animation: drift 65s linear infinite; }
+.cloud::before, .cloud::after { content: ""; position: absolute; border-radius: 50%; background: inherit; }
+.cloud::before { width: 74px; height: 74px; left: 25px; bottom: 8px; }
+.cloud::after { width: 55px; height: 55px; right: 18px; bottom: 8px; }
+#home .cloud:nth-of-type(2) { left: 290px; }
+#home .cloud:nth-of-type(3) { left: 790px; }
+@keyframes drift { 0%,100% { transform: translateX(-28px); } 50% { transform: translateX(55px); } }
+.homebtns { top: 220px; gap: 90px; }
+.big { position: relative; width: 330px; height: 380px; border-radius: 48px; border: 4px solid #ffffffb3;
+  gap: 22px; font-size: 44px; letter-spacing: -.8px; text-shadow: 0 1px 0 #ffffff55;
+  box-shadow: 0 10px 0 var(--edge), 0 22px 30px #384c4826, inset 0 3px 0 #ffffff80; }
+.big::after { content: ""; position: absolute; inset: 12px; border: 2px dashed #ffffff66; border-radius: 34px; pointer-events: none; }
+.big .ico { display: grid; place-items: center; width: 218px; height: 218px; font-size: 145px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 30%, #fffdf1, #fffdf1b3); box-shadow: 0 5px 0 #ffffff55, 0 12px 24px #6c4e2512; }
+.b-play { --edge: #d99a48; color: #71401f; background: linear-gradient(150deg, #ffdb8e, #ffb66c); animation: hop 5s ease-in-out infinite; }
+.b-stick { --edge: #589f9f; color: #24595c; background: linear-gradient(150deg, #c8eee4, #84d1cd); }
+@keyframes hop { 0%,78%,100% { transform: translateY(0); } 89% { transform: translateY(-8px); } }
+.big:active { animation-play-state: paused; }
+/* the two corner buttons keep to the window's edges (--el / --er, js/stage.js) */
+.lock { width: 80px; height: 80px; left: calc(28px + var(--el)); bottom: 26px; border: 3px solid #ffffffa6; background: #fffbedcc; box-shadow: 0 4px 0 #598d7066; }
+.collbtn { right: calc(42px + var(--er)); bottom: 34px; height: 96px; color: #71491d; border: 3px solid #fff0b5;
+  background: linear-gradient(#ffe7a3, #f8cb6b); box-shadow: 0 7px 0 #bb9549, 0 10px 24px #4c653329; }
+
+.big .ico svg { width: 150px; height: 150px; overflow: visible; filter: drop-shadow(0 4px 3px #5a462a1f); }
+.hello { position: absolute; left: 0; right: 0; top: 44px; text-align: center; font-size: 56px; font-weight: 800; color: #fff; text-shadow: 0 3px 0 #0000002a; pointer-events: none; }
+
+/* The landscape as a picture in the style of the stickers (js/ui.js sets .art when the picture exists): the drawn sun and clouds go. */
+.screen.art { background: #b7e8e2 url("../img/bg/homescreen.jpg") center / cover no-repeat !important; }
+.screen.art .sun, .screen.art .cloud { display: none; }
+/* the greeting sits on a pale sky: dark letters with a light edge */
+.screen.art .hello { color: var(--ink); text-shadow: 0 2px 0 #ffffffcc, 0 0 14px #ffffff99; }

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The launch screen. Android draws its own (the app icon on this colour) and ignores pictures; the colour is the sky
+     of Art/splash.png, so the step to the web launch screen with the full picture is soft (startup.md 3.1, 7.6). -->
+<resources>
+    <color name="splash_background">#B7E8E2</color>
+</resources>

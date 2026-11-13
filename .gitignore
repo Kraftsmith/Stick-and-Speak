@@ -8,11 +8,10 @@ app/ios/App/Pods/
 app/ios/App/App/public/
 app/ios/App/build/
 app/ios/DerivedData/
-app/www/index.html
-app/www/img/
-app/www/audio/
+app/www/
 stick-and-speak.apk
 *.ipa
+.vercel/
 
 # generation logs next to the sticker sources
 Art/stickers/**/*.log

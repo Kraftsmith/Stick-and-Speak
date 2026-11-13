@@ -1,0 +1,201 @@
+// The parent zone behind the code: settings, progress, testing tools; also the 15-minute extension from the sleep screen.
+import { $ } from './stage.js';
+import { U } from './session.js';
+import { S, save, resetAll, nextIdx, doneCount, learnedWords, learnedLetters, uniqueOwned, parentAcc, parentDat, PARENTS,
+  useProfile, profileId, newProfile, profileCards, freeAvatar, avatarPic, deviceLang, AVATARS, LANGS } from './state.js';
+import { Profiles, MAX_PROFILES } from './profiles.js';
+import { enterHome, showWho, bootLog } from './startup.js';
+import { TRACKS, LETTERS, WORDS, STICKER_N } from './data.js';
+import { pick, esc } from './util.js';
+import { say, ru, en, sfx, music, ttsState, renderMute } from './audio.js';
+import { NTTS } from './platform.js';
+import { renderCoins, renderHello } from './ui.js';
+import { go, onEnter } from './nav.js';
+import { startAt } from './lessons.js';
+import { voicesHtml, bindVoices } from './voicelist.js';
+
+/* ================= parent ================= */
+let code = [], entered = [], parentTab = 'settings';
+let avEdit = null, adding = null, showBoot = false, showVoices = false;   // the Children block: whose picture is being chosen, the new child's form
+// sleep screen: a grown-up enters the code and the child gets 15 more minutes today
+$('keepon').onclick = () => { sfx.pop(); U.parentThen = 'extend'; go('parent'); };
+const NAMES = ['zero','one','two','three','four','five','six','seven','eight','nine'];
+function renderParent() {
+  $('lockpad').style.display = 'block'; $('pstats').style.display = 'none';
+  code = pick([1,2,3,4,5,6,7,8,9], 3); entered = [];
+  say(ru('Это для взрослых. Позови ' + parentAcc() + '!'));
+  $('lockcode').textContent = code.map(n => NAMES[n]).join(', ');
+  $('keys').innerHTML = [1,2,3,4,5,6,7,8,9,0].map(n => `<button data-n="${n}">${n}</button>`).join('');
+  $('keys').querySelectorAll('button').forEach(b => b.onclick = () => {
+    entered.push(+b.dataset.n);
+    if (entered[entered.length - 1] !== code[entered.length - 1]) { entered = []; sfx.no(); return; }
+    if (entered.length === 3) {
+      // the code was asked for something else: a child chosen on "Who's playing?"
+      if (typeof U.parentThen === 'function') { const then = U.parentThen; U.parentThen = null; then(); return; }
+      if (U.parentThen === 'extend') {
+        U.parentThen = null; S.usedMs = Math.max(0, S.limit * 60000 - 15 * 60000); save();
+        U.pathTr = 'main'; go('path'); return;
+      }
+      showStats();
+    }
+  });
+}
+// Settings: the children on this device (cloud-sync.md 4.6, startup.md 3.5)
+function kidsHtml() {
+  const kids = profileCards(), many = kids.length > 1, ask = Profiles.device().askWho;
+  const pics = (sel, attr) => `<div class="pavs">${AVATARS.map(a => `<button ${attr}="${a}" class="${a === sel ? 'on' : ''}">${avatarPic(a)}</button>`).join('')}</div>`;
+  return `<div class="pkids"><div class="ph">Children</div>
+    ${kids.map(k => `<div class="pkid ${k.playing ? 'cur' : ''}">
+      <button class="pav" data-av="${k.id}" title="Change the picture">${avatarPic(k.avatar)}</button>
+      <input type="text" data-name="${k.id}" maxlength="12" placeholder="No name" value="${esc(k.name)}">
+      <span class="pkw">${k.words} words</span>
+      ${k.playing ? '<b class="pknow">playing now</b>' : `<button data-sw="${k.id}">Switch</button>`}
+      ${many ? `<button class="pkdel" data-del="${k.id}">Delete</button>` : ''}
+      ${avEdit === k.id ? pics(k.avatar, `data-id="${k.id}" data-pick`) : ''}
+    </div>`).join('')}
+    ${adding ? `<div class="pkid new">
+        <input type="text" id="akname" maxlength="12" placeholder="Name" value="${esc(adding.kidName)}">
+        <span class="pkrow">Instructions: ${LANGS.map(([l, n]) => `<button data-al="${l}" class="${adding.lang === l ? 'on' : ''}">${n}</button>`).join('')}</span>
+        <span class="pkrow">Child calls you: ${[['', 'Mom or Dad'], ...Object.entries(PARENTS).map(([k, p]) => [k, p.label])]
+          .map(([k, l]) => `<button data-aw="${k}" class="${adding.parentWho === k ? 'on' : ''}">${l}</button>`).join('')}</span>
+        ${pics(adding.avatar, 'data-apick')}
+        <span class="pkrow"><button class="on" id="akadd">Add</button><button id="akcancel">Cancel</button></span>
+      </div>`
+      : kids.length < MAX_PROFILES ? '<button id="kadd">+ Add a child</button>' : `<span class="pnote">${MAX_PROFILES} children at most</span>`}
+    ${many ? `<div class="pkrow pkask">Who plays at the start: ${[['kids', 'Children choose'], ['parent', 'Ask for the parent code'], ['never', 'Do not ask']]
+        .map(([k, l]) => `<button data-ask="${k}" class="${ask === k ? 'on' : ''}">${l}</button>`).join('')}
+        <span class="pnote">The “Who’s playing?” screen is shown every time the app starts. “Do not ask” opens the child who played last.</span></div>` : ''}
+  </div>`;
+}
+function kidsWire(p) {
+  const q = sel => p.querySelectorAll(sel);
+  q('[data-name]').forEach(i => i.oninput = () => {
+    const id = i.dataset.name, name = i.value.trim();
+    if (id === profileId()) { S.kidName = name; save(); renderHello(); } else Profiles.setLocal(id, { kidName: name });
+  });
+  q('[data-av]').forEach(b => b.onclick = () => { avEdit = avEdit === b.dataset.av ? null : b.dataset.av; showStats(); });
+  q('[data-pick]').forEach(b => b.onclick = () => {
+    const id = b.dataset.id;
+    if (id === profileId()) { S.avatar = b.dataset.pick; save(); } else Profiles.patch(id, { avatar: b.dataset.pick });
+    avEdit = null; showStats();
+  });
+  q('[data-sw]').forEach(b => b.onclick = () => { sfx.pop(); enterHome(b.dataset.sw); });
+  q('[data-del]').forEach(b => b.onclick = () => {
+    const id = b.dataset.del, kid = profileCards().find(k => k.id === id);
+    if (!confirm(`Delete ${kid.name || 'this child'}? The stickers and albums will be gone.`)) return;
+    const wasPlaying = id === profileId();
+    if (!Profiles.remove(id)) return;
+    if (wasPlaying) { useProfile(Profiles.current()); renderHello(); renderCoins(); renderMute(); }
+    avEdit = null; showStats();
+  });
+  if ($('kadd')) $('kadd').onclick = () => { adding = { kidName: '', lang: S.lang || deviceLang(), parentWho: S.parentWho || '', avatar: freeAvatar() }; showStats(); };
+  if (adding) {
+    $('akname').oninput = e => { adding.kidName = e.target.value.trim(); };
+    q('[data-al]').forEach(b => b.onclick = () => { adding.lang = b.dataset.al; showStats(); });
+    q('[data-aw]').forEach(b => b.onclick = () => { adding.parentWho = b.dataset.aw; showStats(); });
+    q('[data-apick]').forEach(b => b.onclick = () => { adding.avatar = b.dataset.apick; showStats(); });
+    $('akadd').onclick = () => { newProfile(adding); adding = null; showStats(); };
+    $('akcancel').onclick = () => { adding = null; showStats(); };
+  }
+  q('[data-ask]').forEach(b => b.onclick = () => { Profiles.setDevice({ askWho: b.dataset.ask }); showStats(); });
+}
+// Testing: what the last cold start did (startup.md 10)
+function bootHtml() {
+  const r = bootLog.route || {};
+  return `<table class="pboot">
+    <tr><td>Started</td><td>${bootLog.at} · launch screen left at ${bootLog.splashMs} ms</td></tr>
+    <tr><td>Route</td><td>${r.screen || '—'}${r.profileId ? ' · ' + r.profileId.slice(0, 8) : ''}</td></tr>
+    <tr><td>Cloud</td><td>${bootLog.pull}</td></tr>
+    ${bootLog.profiles.map(b => `<tr><td>${esc(b.name || 'No name')} · ${b.id.slice(0, 8)}</td><td>base v${b.baseVersion} · ${b.dirty ? 'dirty' : 'clean'} · ${b.action}</td></tr>`).join('')}
+  </table>`;
+}
+function showStats() {
+  $('lockpad').style.display = 'none'; const p = $('pstats'); p.style.display = 'block';
+  const acc = S.stats.correct + S.stats.wrong ? Math.round(S.stats.correct / (S.stats.correct + S.stats.wrong) * 100) : 0;
+  const words = learnedWords(), letters = learnedLetters().map(i => LETTERS[i][0]);
+  const weak = Object.entries(S.stats.err).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, n]) => `${k} (${n})`);
+  const mins = Math.round(S.usedMs / 60000);
+  const where = tr => { const i = nextIdx(tr), n = TRACKS[tr].lessons.length;
+    return `${doneCount(tr)} of ${n}` + (i < n ? ` · now: ${TRACKS[tr].islands.find(is => is.idx.includes(i)).label}` : ' · all done'); };
+  const TABS = [['settings', 'Settings'], ['progress', 'Progress'], ['testing', 'Testing']];
+  const tabs = `<div class="ptabs">${TABS.map(([k, l]) => `<button data-pt="${k}" class="${parentTab === k ? 'on' : ''}">${l}</button>`).join('')}</div>`;
+  const PROGRESS = `<table>
+    <tr><td>Lessons</td><td>${where('main')}</td></tr>
+    <tr><td>Correct answers</td><td>${acc}%</td></tr>
+    <tr><td>English words (${words.length} of ${WORDS.length})</td><td style="font-weight:400;font-size:22px">${words.slice(-12).join(', ') || '—'}</td></tr>
+    <tr><td>Letters (${letters.length} of ${LETTERS.length})</td><td>${letters.join(' ') || '—'}</td></tr>
+    <tr><td>Frequent mistakes</td><td style="font-weight:400;font-size:22px">${weak.join(', ') || '—'}</td></tr>
+    <tr><td>Puzzles solved</td><td>${S.stats.puzzles}</td></tr>
+    <tr><td>Pairs games</td><td>${S.stats.pairs || 0}</td></tr>
+    <tr><td>Lines games</td><td>${S.stats.lines || 0} (${S.stats.linesWords || 0} words)</td></tr>
+    <tr><td>Races</td><td>${S.stats.races || 0} (first in ${S.stats.raceWins || 0})</td></tr>
+    <tr><td>Stickers collected</td><td>${uniqueOwned()} of ${STICKER_N}</td></tr>
+    <tr><td>Time today</td><td>${mins} min</td></tr>
+  </table>`;
+  const TESTING = `<div class="ptime">For testing:
+    <button id="gift">+100 coins</button>
+    <button id="skip">+1 lesson</button>
+    <button id="lv2">${S.lvl2open ? 'Level 2 open' : 'Open level 2'}</button>
+    <button id="tryrace">Race</button>
+    <button id="tlines1">Lines ★</button><button id="tlines2">Lines ★★</button><button id="tlines3">Lines ★★★</button><button id="tlines4">Lines sh·ch</button><button id="tlines5">Lines ai·oa</button><button id="tlines6">Lines in order</button>
+    <button id="tup">Time is up</button>
+    <button id="treset">Reset time</button>
+    <button id="twho">Show “Who’s playing?”</button>
+    <button id="tboot" class="${showBoot ? 'on' : ''}">Boot log</button>
+    <button id="tvoices" class="${showVoices ? 'on' : ''}">Voices</button>
+    <button id="reset">Reset everything</button></div>${showBoot ? bootHtml() : ''}${showVoices ? voicesHtml() : ''}`;
+  const SETTINGS = kidsHtml() + `<div class="ptime">Music volume: <input type="range" id="mvol" min="0" max="100" step="5" value="${S.musicVol}"><b id="mvoln">${S.musicVol ? S.musicVol + '%' : 'off'}</b></div>
+  <div class="ptime">Voice volume: <input type="range" id="vvol" min="0" max="100" step="10" value="${S.voiceVol}"><b id="vvoln">${S.voiceVol ? S.voiceVol + '%' : 'off'}</b></div>
+  <div class="ptime">Spoken hints in lessons: <button id="hon" class="${S.hints ? 'on' : ''}">on</button><button id="hoff" class="${!S.hints ? 'on' : ''}">off</button>
+    <span class="pnote">off: no Russian instructions, only English words and praise</span></div>
+  <div class="ptime">Child calls you: ${[['', 'Mom or Dad'], ...Object.entries(PARENTS).map(([k, p]) => [k, p.label]), ['custom', 'Other']]
+      .map(([k, l]) => `<button data-pw="${k}" class="${S.parentWho === k ? 'on' : ''}">${l}</button>`).join('')}</div>
+  ${S.parentWho === 'custom' ? `<div class="ptime">«Позови …» <input type="text" id="pacc" maxlength="16" placeholder="тётю" value="${esc(S.parentAcc || '')}">
+      «Покажи …» <input type="text" id="pdat" maxlength="16" placeholder="тёте" value="${esc(S.parentDat || '')}"><button id="plisten">Listen</button></div>` : ''}
+  <div class="ptime">Voice: <span id="vstat">…</span> <button id="vtest">Test</button>${NTTS ? ' <button id="vinst">Install voices</button>' : ''}</div>
+  <div class="ptime">Daily limit: ${[15,20,30,0].map(m => `<button data-m="${m}" class="${S.limit === m ? 'on' : ''}">${m ? m + ' min' : 'no limit'}</button>`).join('')}</div>`;
+  p.innerHTML = tabs + (parentTab === 'progress' ? PROGRESS : parentTab === 'testing' ? TESTING : SETTINGS);
+  p.querySelectorAll('[data-pt]').forEach(b => b.onclick = () => { parentTab = b.dataset.pt; showStats(); });
+  p.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { S.limit = +b.dataset.m; save(); showStats(); });
+  if (parentTab === 'testing') {
+    $('gift').onclick = () => { S.coins += 100; save(); renderCoins(); showStats(); };
+    $('skip').onclick = () => { Object.keys(TRACKS).forEach(tr => { const i = nextIdx(tr); if (i < TRACKS[tr].lessons.length) S.prog[tr][i] = 'ok'; }); save(); showStats(); };
+    $('tup').onclick = () => { if (!S.limit) S.limit = 15; S.usedMs = S.limit * 60000; save(); go('album'); };
+    $('lv2').onclick = () => { S.lvl2open = true; save(); showStats(); };
+    // the first circle of that game in a theme (level 1) or a group (level 2)
+    const gameAt = (tr, n, g) => TRACKS[tr].islands[n].idx.find(i => TRACKS[tr].lessons[i].game === g);
+    $('tryrace').onclick = () => startAt('main', gameAt('main', 0, 'race'), 'race');
+    // the first lines of theme 1, 3 and 6: level 1, 2 and 3
+    [[1, 0], [2, 2], [3, 5]].forEach(([n, t]) => { $('tlines' + n).onclick = () => startAt('main', gameAt('main', t, 'lines'), 'lines'); });
+    // level 2: group 1 and 4, a letter team on one ball; level 3 (not on a path yet): letters in order
+    $('tlines4').onclick = () => startAt('lvl2', gameAt('lvl2', 0, 'lines'), 'lines');
+    $('tlines5').onclick = () => startAt('lvl2', gameAt('lvl2', 3, 'lines'), 'lines');
+    $('tlines6').onclick = () => startAt('main', gameAt('main', 5, 'lines'), 'lines', { order: true });
+    $('treset').onclick = () => { S.usedMs = 0; save(); showStats(); };
+    $('twho').onclick = () => showWho();
+    $('tboot').onclick = () => { showBoot = !showBoot; showStats(); };
+    $('tvoices').onclick = () => { showVoices = !showVoices; showStats(); };
+    if (showVoices) bindVoices(p, showStats);
+    $('reset').onclick = () => { if (confirm('Reset all progress?')) resetAll(); };
+  }
+  if (parentTab !== 'settings') return;
+  $('mvol').oninput = e => { const v = +e.target.value; music.setVol(v); $('mvoln').textContent = v ? v + '%' : 'off'; };
+  $('vvol').oninput = e => { S.voiceVol = +e.target.value; save(); $('vvoln').textContent = S.voiceVol ? S.voiceVol + '%' : 'off'; };
+  $('vvol').onchange = () => say(ru('Привет!'), en('Hello!'));
+  $('hon').onclick = () => { S.hints = true; save(); showStats(); };
+  $('hoff').onclick = () => { S.hints = false; save(); showStats(); };
+  kidsWire(p);
+  p.querySelectorAll('[data-pw]').forEach(b => b.onclick = () => { S.parentWho = b.dataset.pw; save(); showStats(); });
+  if ($('pacc')) {
+    $('pacc').oninput = e => { S.parentAcc = e.target.value.trim(); save(); };
+    $('pdat').oninput = e => { S.parentDat = e.target.value.trim(); save(); };
+    $('plisten').onclick = () => say(ru('Позови ' + parentAcc() + '! Покажи ' + parentDat() + '!'));
+  }
+  $('vtest').onclick =() => say(ru('Привет! Это проверка.'), en('Hello! This is a test.'));
+  if (NTTS) {
+    $('vinst').onclick = () => NTTS.install().catch(() => {});
+    Promise.all(['ru-RU', 'en-US'].map(l => NTTS.supported(l).catch(() => false)))
+      .then(([r, e]) => { $('vstat').textContent = `Russian ${r ? '✓' : '✗'} · English ${e ? '✓' : '✗'}${ttsState.log ? ' · ' + ttsState.log : ''}`; });
+  } else $('vstat').textContent = 'browser speech';
+}
+onEnter('parent', renderParent);

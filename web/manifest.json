@@ -1,0 +1,15 @@
+{
+  "id": "stick-and-speak",
+  "name": "Stick & Speak",
+  "short_name": "Stick & Speak",
+  "description": "English words for small children: lessons, stickers and albums.",
+  "lang": "en",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#FFB648",
+  "theme_color": "#FFB648",
+  "categories": ["education", "kids"],
+  "icons": [{ "src": "icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any" }]
+}

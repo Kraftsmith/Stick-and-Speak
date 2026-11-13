@@ -24,8 +24,7 @@ workflows:
       - name: Web assets, artwork, voice clips into the iOS project
         script: |
           cd app
-          cp ../prototype/index.html www/index.html
-          rm -rf www/img www/audio && cp -r ../prototype/img www/img && cp -r ../prototype/audio www/audio
+          rm -rf www && cp -r ../web www && rm -rf www/.vercel www/.gitignore www/README.md
           npx cap sync ios
       - name: Signing profiles
         script: xcode-project use-profiles

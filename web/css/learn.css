@@ -1,0 +1,47 @@
+/* The lesson path: level tabs, the line of lessons. */
+#ptitle { pointer-events: auto; display: flex; justify-content: center; gap: 16px; top: 28px; }
+.lvtab { font-family: inherit; font-size: 34px; font-weight: 800; padding: 10px 30px; border-radius: 30px; border: 3px solid #fff; cursor: pointer;
+  background: #fffdf6; color: #6d5a47; box-shadow: 0 5px 0 #d8ccb4; }
+.lvtab.on { background: #f28743; color: #fff; box-shadow: 0 5px 0 #c35f22; }
+.lvtab.locked { opacity: .6; }
+/* lesson path */
+#path { background: #fff1d6; }
+/* one horizontal line of lessons, scrolls sideways */
+/* the line runs out to the window's sides (--bx, js/stage.js), its ends keep the same distance from the frame */
+.islands { position: absolute; top: 120px; left: calc(0px - var(--bx)); right: calc(0px - var(--bx)); bottom: 20px; overflow-x: auto; overflow-y: hidden;
+  touch-action: pan-x; scrollbar-width: none; cursor: grab; }
+.islands::-webkit-scrollbar { display: none; }
+.pline { display: flex; align-items: center; height: 100%; padding: 0 calc(140px + var(--bx)); width: max-content; }
+.conn { flex: none; width: 70px; height: 8px; border-radius: 4px; background: #d9cfc0; }
+.conn.done { background: #7fcf72; }
+.lwrap { position: relative; flex: none; }
+.ttag { position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%); margin-bottom: 30px; text-align: center;
+  font-size: 54px; line-height: 1; white-space: nowrap; pointer-events: none; }
+.ttag small { display: block; font-size: 22px; font-weight: 800; color: #a08a6a; margin-top: 4px; }
+.ln { position: relative; width: 108px; height: 108px; border-radius: 50%; border: none; font-family: inherit; font-size: 50px; font-weight: 900;
+  cursor: pointer; background: #ffd34d; box-shadow: 0 7px 0 #d9a514; color: #7a5800; display: flex; align-items: center; justify-content: center; }
+.ln.done { background: #c8f5c1; box-shadow: 0 7px 0 #7fcf72; color: #2c7a3a; }
+.ln.locked { background: #e6e0d6; box-shadow: 0 7px 0 #c9c0b2; filter: grayscale(1); opacity: .5; cursor: default; }
+.ln.cur { background: #ff8a3d; box-shadow: 0 7px 0 #c85e1a, 0 0 0 9px rgba(255,138,61,.3); color: #fff; animation: hopc 1.6s ease-in-out infinite; z-index: 2; }
+@keyframes hopc { 0%,75%,100% { transform: scale(1.18); } 87% { transform: scale(1.18) translateY(-14px); } }
+.ln .mk { position: absolute; right: -10px; top: -12px; font-size: 36px; }
+
+/* Learning pages share softly textured paper and quiet corner shapes. */
+#path { background: radial-gradient(ellipse at 0 100%, #e1ead1 0 24%, transparent 24.2%),
+  radial-gradient(ellipse at 105% 100%, #f3ddbc 0 31%, transparent 31.2%), radial-gradient(#d8b98430 1.2px, transparent 1.7px), #fff6e3; background-size: auto, auto, 24px 24px, auto; }
+#path { background-color: #fff7e7; }
+.islands { bottom: 20px; }
+.pline { position: relative; }
+.conn { height: 14px; background: repeating-linear-gradient(90deg, #d9cbb2 0 8px, #eadfc9 8px 16px); box-shadow: 0 3px 0 #cbbca344; }
+.conn.done { background: repeating-linear-gradient(90deg, #8ebd8b 0 8px, #b3d4a4 8px 16px); }
+.ln { border: 5px solid #fffdf1; box-shadow: 0 8px 0 #cdbd96, 0 14px 18px #8b73561a; }
+.ln.done { background: linear-gradient(#e0f1c8, #acd79f); color: #2b6242; box-shadow: 0 8px 0 #7fa772, 0 12px 18px #58734822; }
+.ln.locked { background: linear-gradient(#ede9e0, #d8d4ca); color: #79786f; opacity: .8; box-shadow: 0 7px 0 #bdb8ad; }
+.ln.cur { background: linear-gradient(#ffb96c, #f28743); border-color: #fff4cd;
+  box-shadow: 0 8px 0 #c36d38, 0 0 0 10px #ffd89380, 0 16px 24px #b58a3d30; animation: hopc 3.2s ease-in-out infinite; }
+@keyframes hopc { 0%,70%,100% { transform: scale(1.12); } 85% { transform: scale(1.12) translateY(-10px); } }
+.ttag { margin-bottom: 38px; padding: 14px 22px 12px; min-width: 112px; font-size: 44px;
+  background: #fffdf4; border: 2px solid #eee0c4; border-radius: 28px; box-shadow: 0 5px 0 #ecdfc2; }
+.ttag::after { content: ""; position: absolute; bottom: -10px; left: calc(50% - 8px); width: 16px; height: 16px; background: #fffdf4; rotate: 45deg; border-right: 2px solid #eee0c4; border-bottom: 2px solid #eee0c4; }
+.ttag small { font-size: 21px; color: #77634e; margin-top: 8px; }
+.ln .mk { width: 46px; height: 46px; display: grid; place-items: center; background: #fff4cc; border-radius: 50%; font-size: 32px; box-shadow: 0 3px 0 #dfc887; }
