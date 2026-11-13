@@ -1,4 +1,4 @@
-// Stick & Speak: the entry point. Importing a screen module registers it with the navigation; boot() starts the app.
+// Stick & Play: the entry point. Importing a screen module registers it with the navigation; boot() starts the app.
 import './path.js';
 import './quiz.js';
 import './trace.js';
@@ -15,7 +15,7 @@ import { VERSION } from './version.js';
 import { boot } from './startup.js';
 
 /* ================= start ================= */
-$('note').textContent = 'Stick & Speak · ' + VERSION;
+$('note').textContent = 'Stick & Play · ' + VERSION;
 registerOffline();
 fullscreenOnFirstTouch();
 boot();

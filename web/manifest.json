@@ -1,7 +1,7 @@
 {
   "id": "stick-and-speak",
-  "name": "Stick & Speak",
-  "short_name": "Stick & Speak",
+  "name": "Stick & Play",
+  "short_name": "Stick & Play",
   "description": "English words for small children: lessons, stickers and albums.",
   "lang": "en",
   "start_url": "./",

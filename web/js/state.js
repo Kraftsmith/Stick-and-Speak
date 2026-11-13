@@ -76,7 +76,7 @@ export function useProfile(id, played = true) {
 }
 /* ================= children ================= */
 // languages of the instructions; the device language if it is one of them, English otherwise
-export const LANGS = [['ru', 'Русский'], ['en', 'English'], ['uk', 'Українська']];
+export const LANGS = [['en', 'English'], ['ru', 'Русский'], ['uk', 'Українська'], ['de', 'Deutsch'], ['fr', 'Français'], ['es', 'Español']];
 export function deviceLang() {
   const l = (typeof navigator !== 'undefined' && navigator.language || 'en').slice(0, 2).toLowerCase();
   return LANGS.some(x => x[0] === l) ? l : 'en';

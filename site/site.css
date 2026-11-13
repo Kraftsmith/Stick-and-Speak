@@ -1,4 +1,4 @@
-/* Stick & Speak site: the look comes from the game (web/css/base.css, web/css/home.css). */
+/* Stick & Play site: the look comes from the game (web/css/base.css, web/css/home.css). */
 :root {
   --ink: #493c50; --muted: #756579; --paper: #fffdf5;
   --mint: #e6f6f0; --warm: #fff1d2; --sky: #96e4e2;
@@ -205,14 +205,14 @@ h3 { font-size: 21px; line-height: 1.25; font-weight: 800; }
 .cards .up { background: #fffdf4; box-shadow: 0 4px 0 #d9c79f; }
 .cards .up::before { content: none; }
 .cards .up img { width: 50px; }
-.m-race { background: #cfeeda; display: flex; flex-direction: column; align-items: center; gap: 0; }
+.m-race { background: #cfeeda; display: block; }
 .m-race .gate { display: flex; justify-content: center; gap: 46px; padding-top: 12px; }
-.m-race .gate { gap: 52px; padding-top: 10px; }
+.m-race .gate { gap: 52px; padding-top: 10px; position: relative; z-index: 1; }
 .m-race .gate i { width: 54px; height: 54px; border-radius: 16px; }
 .m-race .gate i img { width: 44px; height: 44px; }
-.m-race .road { flex: 1; min-height: 0; margin-top: 10px; width: 210px; background-color: #6f6a7c; border-radius: 16px 16px 0 0; position: relative;
+.m-race .road { position: absolute; top: 0; bottom: 0; left: 50%; width: 210px; margin-left: -105px; background-color: #6f6a7c;
   background-image: linear-gradient(#fff 55%, transparent 0); background-size: 6px 26px; background-repeat: repeat-y; background-position: center 4px; }
-.m-race .coin { position: absolute; left: 144px; top: 8%; font-size: 28px; }
+.m-race .coin { position: absolute; left: 144px; top: 36%; font-size: 28px; }
 .m-race .car { position: absolute; left: 35px; bottom: 5px; width: 36px; height: auto; filter: drop-shadow(0 3px 2px #0000004d); }
 .m-balls { background: #fbe3ec; }
 .m-balls .grid { display: grid; grid-template-columns: repeat(5, 40px); gap: 5px; padding: 8px; background: #ffffff8c; border-radius: 14px; }
@@ -287,12 +287,12 @@ h3 { font-size: 21px; line-height: 1.25; font-weight: 800; }
 .game:is(:hover, .play) .m-race .hit { animation: g-hit 3.6s infinite; }
 @keyframes g-road { from { background-position: center 4px; } to { background-position: center 30px; } }
 @keyframes g-car { 0%, 18% { transform: none; } 26% { transform: translateX(53px) rotate(16deg); } 34%, 74% { transform: translateX(106px); } 82% { transform: translateX(53px) rotate(-16deg); } 90%, 100% { transform: none; } }
-@keyframes g-coin { 0%, 30% { top: -40%; opacity: 0; transform: none; } 32% { top: -40%; opacity: 1; } 58% { top: 46%; opacity: 1; transform: none; } 66%, 100% { top: 46%; opacity: 0; transform: scale(2.200); } }
+@keyframes g-coin { 0%, 30% { top: 10%; opacity: 0; transform: none; } 32% { top: 10%; opacity: 1; } 58% { top: 62%; opacity: 1; transform: none; } 66%, 100% { top: 62%; opacity: 0; transform: scale(2.2); } }
 @keyframes g-hit { 0%, 6%, 100% { outline: 5px solid transparent; transform: none; } 10% { outline: 5px solid #ffc94a; transform: scale(1.14); } 16%, 62% { outline: 5px solid #ffc94a; transform: none; } 70% { outline: 5px solid transparent; } }
 
 /* 6. letter balls: the last ball joins the row, the row pops and the word's picture comes out */
-.game:is(:hover, .play) .m-balls .last { animation: g-ball-in 3.8s infinite; }
 .game:is(:hover, .play) .m-balls .r { animation: g-ball-pop 3.8s infinite; }
+.game:is(:hover, .play) .m-balls .r.join { animation: g-ball-in 3.8s infinite; }
 .game:is(:hover, .play) .m-balls .won { animation: g-won 3.8s infinite; }
 @keyframes g-ball-pop { 0%, 40%, 54%, 100% { transform: none; } 47% { transform: scale(1.22); } }
 @keyframes g-ball-in { 0%, 14% { transform: translate(45px, -45px); } 24% { transform: translate(22px, -58px); } 34%, 40% { transform: none; } 47% { transform: scale(1.22); } 54%, 100% { transform: none; } }
@@ -368,3 +368,6 @@ h3 { font-size: 21px; line-height: 1.25; font-weight: 800; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* a round separator between the two words of a heading */
+h2 .sep { display: inline-block; width: .32em; height: .32em; margin: 0 .42em; border-radius: 50%; background: #ffb66c; vertical-align: .22em; }

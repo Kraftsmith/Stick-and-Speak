@@ -1,4 +1,4 @@
-package app.stickandspeak.kids;
+package app.stickandplay.kids;
 
 import android.os.Bundle;
 import android.view.WindowManager;

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Stick &amp; Speak</string>
-    <string name="title_activity_main">Stick &amp; Speak</string>
-    <string name="package_name">app.stickandspeak.kids</string>
-    <string name="custom_url_scheme">app.stickandspeak.kids</string>
+    <string name="app_name">Stick &amp; Play</string>
+    <string name="title_activity_main">Stick &amp; Play</string>
+    <string name="package_name">app.stickandplay.kids</string>
+    <string name="custom_url_scheme">app.stickandplay.kids</string>
 </resources>

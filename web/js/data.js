@@ -28,6 +28,9 @@ export const SETS = [
   { id:'kitchen', name:'Kitchen', ru:'Кухня', icon:'🍳', group:'things', items:[
     ['🍎','apple',20],['🍌','banana',20],['🍓','strawberry',20],['🥕','carrot',20],['🧀','cheese',20],['🥚','egg',20],['🥛','milk',20],['🥄','spoon',20],
     ['🍕','pizza',50,'rare'],['🍦','ice cream',50,'rare'],['🍩','donut',50,'rare'],['🎂','cake',100,'special'] ]},
+  { id:'space', name:'Space', ru:'Космос', icon:'🚀', group:'things', items:[
+    ['☀️','sun',20],['🌙','moon',20],['⭐','star',20],['🪐','planet',20],['🌍','Earth',20],['🚀','rocket',20],['🧑‍🚀','astronaut',20],['👽','alien',20],
+    ['☄️','comet',50,'rare'],['🛰️','satellite',50,'rare'],['🚙','rover',50,'rare'],['🛸','UFO',100,'special'] ]},
 ];
 export const slug = w => w.toLowerCase().replace(/[^a-z]+/g, "-");   // "teddy bear" -> teddy-bear.png
 export const STICKERS = {};
@@ -39,7 +42,7 @@ export const pic = o => o && o.img ? `<img class="spic" src="${o.img}" alt="" dr
 export const iconOf = s => s.img ? pic(s) : s.icon;
 export const STICKER_N = Object.keys(STICKERS).length;
 
-// Vocabulary: 7 themes × 8 words, studied in this order (the same order as the albums).
+// Vocabulary: 8 themes × 8 words, studied in this order (the same order as the albums).
 export const THEME_ORDER = SETS.map(s => s.id);
 export const THEME_META = Object.fromEntries(SETS.map(s => [s.id, [s.icon, s.name]]));
 export const THEMES = Object.fromEntries(SETS.map(s => [s.id, s.items.slice(0, 8).map(([e, w]) => [w, e])]));
@@ -56,6 +59,7 @@ export const LETTERS = [
   ['M',[['moon','🌙'],['milk','🥛']]], ['D',[['dog','🐕'],['duck','🦆']]], ['G',[['goat','🐐'],['grapes','🍇']]],
   ['O',[['octopus','🐙'],['otter','🦦']]], ['C',[['cat','🐈'],['cake','🎂']]], ['E',[['egg','🥚'],['elephant','🐘']]],
   ['H',[['horse','🐎'],['hippo','🦛']]], ['R',[['rabbit','🐇'],['robot','🤖']]],
+  ['B',[['ball','⚽'],['bed','🛏️']]], ['F',[['fox','🦊'],['fish','🐟']]],
 ];
 export const PZ_COLORS = ['#ffd36b','#b8f0a0','#b9c8ff','#9fe0ff','#d8f3c8','#ffd0b5','#ffe9a8','#ffc9ec'];
 // puzzle levels: [cols, rows, ghost underlay]
@@ -91,7 +95,7 @@ const game = (g, of) => ({ kind: 'game', game: g, of, theme: of.theme, level: of
 // ONE progression. Words, letters and puzzles are task types mixed inside lessons; pairs, lines and the race are
 // circles of their own. Theme = 5 lessons, a game after each: words 1–4, pairs, 1st letter, lines, words 5–8, pairs,
 // 2nd letter, lines, review, race. Two letters per theme in phonics order.
-export const PZ_LEVEL_BY_THEME = [1, 1, 2, 2, 2, 3, 3];
+export const PZ_LEVEL_BY_THEME = [1, 1, 2, 2, 2, 3, 3, 3];
 export const TRACKS = {
   main: mkTrack('Learn', 'Поехали учиться!', THEME_ORDER.map((t, ti) => {
     const level = PZ_LEVEL_BY_THEME[ti], l1 = ti * 2, l2 = ti * 2 + 1;
@@ -164,6 +168,7 @@ export const SCENES = [
   { id:'toys', css:'room', icon:'🧸', bg:'#ffd0e0', deco:[['🪟',540,60,160],['🖼️',140,90,110],['🧺',1000,330,130]] },
   { id:'home', css:'home', icon:'🛋️', bg:'#c9b3e6', deco:[['🖼️',180,80,110],['🪴',1080,300,150],['💡',620,10,70]] },
   { id:'kitchen', css:'kitchen', icon:'🍳', bg:'#ffe08a', deco:[['🪟',560,50,150],['🫖',150,250,90],['🍽️',980,260,90]] },
+  { id:'space', css:'space', icon:'🚀', bg:'#5a5fb0', deco:[['🪐',120,70,120],['⭐',1040,60,60],['⭐',640,40,44],['🌑',980,430,140]] },
 ];
 
 /* ---- rare and special stickers (SPEC 3.6, 3.7) ----
@@ -199,6 +204,10 @@ export const STICKER_FX = {
   'kitchen:ice cream':   { snd: 'a cartoon slurp and a happy mmm' },
   'kitchen:donut':       { snd: 'a cartoon crunchy bite and a pop' },
   'kitchen:cake':        { snd: 'a party horn toot and a little cheer', move: 'jiggle', act: 'party', burst: 'confetti' },
+  'space:comet':         { snd: 'a short sparkling whoosh flying past' },
+  'space:satellite':     { snd: 'three short friendly satellite beeps' },
+  'space:rover':         { snd: 'a small robot rover motor whirring and a happy beep' },
+  'space:UFO':           { snd: 'a friendly cartoon flying saucer hovering, a wobbly woo-woo sound, short', move: 'swim', act: 'spin', burst: 'stars' },
 };
 // the file app/sfx.js writes for a sticker: "toys:nesting dolls" -> audio/sfx/toys-nesting-dolls.mp3
 export const sfxFile = key => 'audio/sfx/' + key.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.mp3';

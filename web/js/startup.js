@@ -73,7 +73,7 @@ export function enterHome(profileId, { greet = false } = {}) {
 }
 
 /* ================= texts of the two screens ================= */
-// Text only, for the grown-up, in the three languages of the instructions (startup.md 3.2, 3.4).
+// Text only, for the grown-up, in every language of the instructions (startup.md 3.2, 3.4).
 const T = {
   ru: { title: 'Это для взрослых', ask: 'Как зовут ребёнка?', lang: 'Язык инструкций:', start: 'Начать', skip: 'Пропустить',
         account: 'Уже есть аккаунт? Войти, чтобы вернуть прогресс', who: 'Кто играет?', noname: 'Без имени', eg: 'Маша' },
@@ -81,6 +81,12 @@ const T = {
         account: 'Already have an account? Sign in to restore progress', who: 'Who’s playing?', noname: 'No name', eg: 'Masha' },
   uk: { title: 'Це для дорослих', ask: 'Як звати дитину?', lang: 'Мова інструкцій:', start: 'Почати', skip: 'Пропустити',
         account: 'Вже є акаунт? Увійти, щоб повернути прогрес', who: 'Хто грає?', noname: 'Без імені', eg: 'Маша' },
+  de: { title: 'Für Erwachsene', ask: 'Wie heißt das Kind?', lang: 'Sprache der Anleitungen:', start: 'Los geht’s', skip: 'Überspringen',
+        account: 'Schon ein Konto? Anmelden und den Fortschritt zurückholen', who: 'Wer spielt?', noname: 'Ohne Namen', eg: 'Mia' },
+  fr: { title: 'Pour les adultes', ask: 'Comment s’appelle l’enfant ?', lang: 'Langue des consignes :', start: 'Commencer', skip: 'Passer',
+        account: 'Déjà un compte ? Se connecter pour retrouver la progression', who: 'Qui joue ?', noname: 'Sans nom', eg: 'Léa' },
+  es: { title: 'Para adultos', ask: '¿Cómo se llama el niño?', lang: 'Idioma de las instrucciones:', start: 'Empezar', skip: 'Omitir',
+        account: '¿Ya tienes cuenta? Inicia sesión para recuperar el progreso', who: '¿Quién juega?', noname: 'Sin nombre', eg: 'Lucía' },
 };
 
 /* ================= first run ================= */
@@ -90,7 +96,7 @@ let frLang = deviceLang();
 let signIn = null;
 export function onSignIn(fn) { signIn = fn; }
 function renderFirstRun() {
-  const t = T[frLang];
+  const t = T[frLang] || T.en;
   $('frTitle').textContent = t.title; $('frAsk').textContent = t.ask; $('frLangL').textContent = t.lang;
   $('frName').placeholder = t.eg; $('frStart').textContent = t.start; $('frSkip').textContent = t.skip;
   $('frLangs').innerHTML = LANGS.map(([k, name]) => `<button data-l="${k}" class="${k === frLang ? 'on' : ''}">${name}</button>`).join('');

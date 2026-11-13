@@ -22,7 +22,7 @@ const REDO = process.argv.includes('--redo') ? process.argv[process.argv.indexOf
 // a native Russian voice from the ElevenLabs library (added to "My voices", then its id goes here or in VOICE_RU).
 const VOICES = {
   en: process.env.VOICE_EN || 'XrExE9yKIg1WjnnlVkGX',   // "Matilda"
-  ru: process.env.VOICE_RU || 'XrExE9yKIg1WjnnlVkGX',   // TODO: native Russian voice id
+  ru: process.env.VOICE_RU || '7G0NvIkWRnU0Dqjgz13p',   // "Kate", a native Russian voice from the ElevenLabs library (chosen 2026-11-13)
 };
 // ---- model, one per language. English must enforce the language: eleven_multilingual_v2 ignores language_code and
 // guesses the language from the text, and a lone English word has nothing to guess from ("kite" came out as Italian
@@ -35,7 +35,7 @@ const takesLanguageCode = model => /_v2_5$|^eleven_v3$/.test(model);
 // Lines that still sounded wrong with the language's model, heard in Testing → Voices (2026-11-12): their own model.
 // Mostly short lines: a word or two gives the model too little to hold a Russian accent with this voice.
 const LINE_MODEL = {
-  'ru|Найди букву': 'eleven_v3', 'ru|Запомни!': 'eleven_v3', 'ru|Найди парочки!': 'eleven_v3', 'ru|Финиш!': 'eleven_v3', 'ru|Тебе кубок!': 'eleven_v3',
+  'ru|Найди': 'eleven_v3', 'ru|Найди букву': 'eleven_v3', 'ru|Запомни!': 'eleven_v3', 'ru|Найди парочки!': 'eleven_v3', 'ru|Финиш!': 'eleven_v3', 'ru|Тебе кубок!': 'eleven_v3',
 };
 const modelOf = (lang, text) => LINE_MODEL[lang + '|' + text] || MODELS[lang];
 // v3 takes stability 0 / 0.5 / 1 only and no other settings

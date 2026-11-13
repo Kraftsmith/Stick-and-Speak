@@ -1,6 +1,6 @@
 # iOS build
 
-The iOS project lives in `app/ios/` (Capacitor). It uses the same `www/` as Android, so the web app, artwork and voice clips are shared. Settings already in place: landscape only, full screen, status bar hidden, bundle id `app.stickandspeak.kids`, display name "Stick & Speak", 1024px app icon, deployment target iOS 15.
+The iOS project lives in `app/ios/` (Capacitor). It uses the same `www/` as Android, so the web app, artwork and voice clips are shared. Settings already in place: landscape only, full screen, status bar hidden, bundle id `app.stickandplay.kids`, display name "Stick & Speak", 1024px app icon, deployment target iOS 15.
 
 ## What is needed
 

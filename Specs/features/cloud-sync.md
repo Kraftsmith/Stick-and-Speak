@@ -215,7 +215,7 @@
 
 **Neon Postgres и Vercel Functions** (решено 2026-11-11). Прежнее решение — Supabase — отменено: у проекта уже есть Vercel Pro, и база, API и сайт живут в одном кабинете и на одном счёте. Плата за это — свой небольшой API и вход через библиотеку, которые Supabase давал готовыми.
 
-- **База** — Neon Postgres, подключена к проекту `stick-and-speak` через Vercel Marketplace (Storage), регион Франкфурт (`aws-eu-central-1`) для GDPR. Счёт идёт через Vercel. Строку подключения `DATABASE_URL` ставит интеграция в переменные окружения проекта; в репозитории и в приложении её нет.
+- **База** — Neon Postgres, подключена к проекту `stick-and-play` через Vercel Marketplace (Storage), регион Франкфурт (`aws-eu-central-1`) для GDPR. Счёт идёт через Vercel. Строку подключения `DATABASE_URL` ставит интеграция в переменные окружения проекта; в репозитории и в приложении её нет.
 - **API** — Vercel Functions в том же проекте: файлы в `web/api/`, Node.js, регион `fra1` рядом с базой (`vercel.json`). Драйвер `@neondatabase/serverless`: запросы к базе по HTTP, без пула соединений, что подходит функциям.
 - **Вход** — библиотека Better Auth внутри функций, её таблицы в той же базе. Способы: e-mail с кодом из 6 цифр (плагин email OTP), Google, Apple. На сайте сессия — cookie, в нативных приложениях — токен в заголовке (плагин bearer); нативный вход Google и Apple — Capacitor-плагин отдаёт `id_token`, Better Auth меняет его на сессию.
 - **Письма с кодом** — Resend через Vercel Marketplace, бесплатного тарифа хватает. Это единственный сервис вне Vercel и Neon, и без него вход по e-mail невозможен.
@@ -294,7 +294,7 @@ returning version;
 -- нет строки в ответе → прочитать текущий профиль этого аккаунта и вернуть ok: false (или 404)
 ```
 
-- API принимает запросы с сайта и из нативных приложений: CORS разрешает `https://stick-and-speak.vercel.app`, `capacitor://localhost` (iOS) и `https://localhost` (Android).
+- API принимает запросы с сайта и из нативных приложений: CORS разрешает `https://stickandplay.kids`, `capacitor://localhost` (iOS) и `https://localhost` (Android). Пока домен не подключён к Vercel и игра не перенесена (Web.md, раздел 10), разрешён и прежний адрес `https://stick-and-play.vercel.app`.
 - Офлайн-кэш (`web/sw.js`) запросы `/api/` не трогает: прогресс из облака не должен приходить из кэша.
 
 ### 5.4. Версии формата документа
@@ -343,7 +343,7 @@ returning version;
 
 ## 7. Голос
 
-Новых реплик нет. Все экраны фичи — текстовые, для взрослого, за родительским замком; переводятся на три языка инструкций вместе с остальным текстом родительской зоны.
+Новых реплик нет. Все экраны фичи — текстовые, для взрослого, за родительским замком; переводятся на все языки инструкций (SPEC 3.10) вместе с остальным текстом родительской зоны.
 
 ## 8. Открытые вопросы
 
@@ -366,7 +366,7 @@ returning version;
 - **Код приложения:** новый модуль `web/js/cloud.js` (и `web/js/profiles.js` для профилей): `Cloud.init()`, `Cloud.signIn(provider)`, `Cloud.signOut()`, `Cloud.pull()`, `Cloud.push()`, `Cloud.markDirty()`, `mergeDoc(local, remote)`, `toDoc(S)` / `fromDoc(doc)`; профили — `Profiles.list/create/switch/remove`, ключи localStorage из 4.6. Вызовы `markDirty()` — в точках из 4.4 (`lessonDone`, покупка, выход из альбома, настройки). Функция `save()` остаётся локальной и синхронной, как сейчас.
 - **Библиотеки в приложении:** нет. `cloud.js` вызывает `/api/` через `fetch`, вход — через HTTP-запросы к `/api/auth/*`; сборщика нет, как и во всём приложении. Вход Apple и Google нативно — Capacitor-плагин (`@capgo/capacitor-social-login` или пара плагинов Apple + Google), его `id_token` уходит в Better Auth; в браузере на компьютере — обычный OAuth-переход, чтобы фичу можно было проверять без телефона (SPEC 7.2).
 - **Сервер:** функции в `web/api/` (`profiles/[id].js`, `profiles/index.js`, `redeem.js`, `account/delete.js`, `auth/[...all].js`, общие `_db.js` и `_auth.js`), зависимости в `web/package.json` (`@neondatabase/serverless`, `better-auth`), регион и функции в `web/vercel.json`. Схема — `server/schema.sql` и миграции Better Auth; `server/README.md` — переменные окружения, ветки Neon, как применить схему и развернуть. Секреты (`DATABASE_URL`, `BETTER_AUTH_SECRET`, ключи Google, Apple, Resend, RevenueCat) — только в переменных окружения Vercel.
-- **Сборка нативных приложений:** `app/build.sh` не копирует в приложение `api/`, `package.json`, `node_modules` и `vercel.json`. Адрес API — константа `API_BASE`: на сайте пустая (тот же домен), в нативной сборке `https://stick-and-speak.vercel.app`.
+- **Сборка нативных приложений:** `app/build.sh` не копирует в приложение `api/`, `package.json`, `node_modules` и `vercel.json`. Адрес API — константа `API_BASE`: на сайте пустая (тот же домен), в нативной сборке `https://stickandplay.kids` (домен куплен 2026-11-13; до его подключения к Vercel — `https://stick-and-play.vercel.app`).
 - **Миграция:** при первом запуске версии с профилями `sticker-proto-v2` переносится в `sticker-profile-<uuid>` и `sticker-current`; старый ключ не удаляется ещё одну версию.
 - **Проверка в браузере:** вкладка Testing — «Sync now», «Show cloud doc», «Force conflict» (ставит `baseVersion − 1` и пишет: должны увидеть слияние). Сценарии для ручной проверки: два окна браузера с одним аккаунтом; офлайн-режим в DevTools; выход и вход; удаление аккаунта на `dev`.
 - **Политика приватности и анкеты магазинов** — обновить списком полей из 4.2 и регионом хранения (5.5).

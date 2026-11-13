@@ -329,6 +329,8 @@ function flyCoins(el) {
   }
 }
 const trash = $('trash');
+// a sticker dragged back onto the shelf goes back into it, the same as one dropped on the trash
+const overShelf = q => q.y >= rectIn($('shelf')).y;
 const overTrash = q => { const r = rectIn(trash); return Math.hypot(q.x - (r.x + r.w / 2), q.y - (r.y + r.h / 2)) < 90; };
 function removePlaced(el) {
   const it = el._it, d = sceneData();
@@ -375,7 +377,7 @@ function dragPlaced(el) {
     if (pinch) { if (ptrs.size === 0) { pinch = null; save(); select(el); } return; }
     if (!off) return; off = null;
     // ask before hiding the trash: a hidden one has no size and nothing would ever land in it
-    const inTrash = overTrash(q);
+    const inTrash = overTrash(q) || (moved && overShelf(q));   // a tap on a sticker that hangs over the shelf is not a drag
     trash.classList.remove('on', 'hot');
     if (inTrash) { removePlaced(el); return; }
     save(); select(el);
@@ -416,7 +418,6 @@ $('tools').querySelectorAll('button').forEach(b => b.onclick = ev => {
     case 'down': it.s = Math.max(.4, it.s - .2); break;
     case 'rot': it.r = (it.r + 30) % 360; break;
     case 'flip': it.f = !it.f; break;
-    case 'del': removePlaced(selected); return;
   }
   save(); applyT(selected); select(selected);
 });

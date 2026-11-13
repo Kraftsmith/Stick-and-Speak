@@ -1,4 +1,4 @@
-// Stick & Speak site. Pictures, icons and voice clips come straight from the game in ../web/ (no copies).
+// Stick & Play site. Pictures, icons and voice clips come straight from the game in ../web/ (no copies).
 import { VOICE } from '../web/js/gen/voice.js';
 import { SFX } from '../web/js/gen/sfx.js';
 import { I } from '../web/js/icons.js';
@@ -68,6 +68,7 @@ const ALBUMS = [
   ['Toys', 'toys', ['teddy bear', 'robot'], ['ball', 'kite', 'train', 'drum', 'carousel']],
   ['Home', 'home', ['sofa', 'clock'], ['chair', 'bed', 'TV', 'window', 'Christmas tree']],
   ['Kitchen', 'kitchen', ['apple', 'pizza'], ['banana', 'cheese', 'milk', 'egg', 'cake']],
+  ['Space', 'space', ['rocket', 'planet'], ['sun', 'moon', 'astronaut', 'comet', 'UFO']],
 ];
 const DEFAULT_ALBUM = 'toys';
 const SPOTS = [[20, 68], [80, 64]];   // where the two stickers lie: x %, y % of the page
@@ -193,7 +194,7 @@ async function demo() {
   if (run === demoRun) finger.style.opacity = 0;
 }
 
-/* ---- the row of seven albums: a tap on a card opens it in the tablet ---- */
+/* ---- the row of eight albums: a tap on a card opens it in the tablet ---- */
 for (const [name, set, onPage, inTray] of ALBUMS) {
   const pic = document.createElement('div');
   pic.className = 'pic';

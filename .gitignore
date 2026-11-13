@@ -9,7 +9,7 @@ app/ios/App/App/public/
 app/ios/App/build/
 app/ios/DerivedData/
 app/www/
-stick-and-speak.apk
+stick-and-play.apk
 *.ipa
 .vercel/
 

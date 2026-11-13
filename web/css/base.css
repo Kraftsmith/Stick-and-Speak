@@ -54,7 +54,7 @@ html, body { margin: 0; height: 100%; background: #2b2540; overflow: hidden;
 .confetti.round { border-radius: 50%; }
 .ic { width: 1em; height: 1em; display: inline-block; vertical-align: -.16em; flex: none; }
 .speak, .tspk { color: #7a5a1c; }
-.tools button { color: #4a5961; } .tools button.del { color: #b0463a; } .trash { color: #a44b3b; }
+.tools button { color: #4a5961; } .trash { color: #a44b3b; }
 @keyframes fall { to { transform: translateY(700px) rotate(540deg); opacity: 0; } }
 
 .note { position: absolute; bottom: 12px; right: 20px; font-size: 16px; color: rgba(0,0,0,.35); z-index: 99; pointer-events: none; }

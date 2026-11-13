@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "app.stickandspeak.kids"
+    namespace = "app.stickandplay.kids"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "app.stickandspeak.kids"
+        applicationId "app.stickandplay.kids"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

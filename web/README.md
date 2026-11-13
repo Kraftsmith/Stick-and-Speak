@@ -1,4 +1,4 @@
-# Stick & Speak — the web app
+# Stick & Play — the web app
 
 This folder is the whole application: a static web page (HTML, CSS, JavaScript modules, no framework, no bundler)
 that runs in a browser and is packaged unchanged into the Android and iOS shells in `../app/` (SPEC 7.2).

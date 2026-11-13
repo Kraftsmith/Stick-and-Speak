@@ -27,7 +27,6 @@
 .tools { position: absolute; z-index: 60; display: none; gap: 8px; background: #fff; padding: 8px; border-radius: 26px; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
 .tools.on { display: flex; }
 .tools button { width: 64px; height: 64px; border-radius: 50%; border: none; background: #f4eee6; font-size: 32px; cursor: pointer; }
-.tools button.del { background: #ffd9d9; }
 .trash { position: absolute; right: calc(30px + var(--er)); bottom: 200px; z-index: 55; width: 120px; height: 120px; border-radius: 50%; background: #ffd9d9;
   font-size: 64px; display: none; align-items: center; justify-content: center; box-shadow: 0 6px 0 #e8a8a8; transition: transform .15s; }
 .trash.on { display: flex; }
@@ -71,7 +70,6 @@
 .tools { padding: 8px; gap: 8px; border-radius: 30px;
   background: #fffdf4; box-shadow: 0 5px 0 #c6bca8, 0 12px 30px #31484930; }
 .tools button { width: 80px; height: 80px; flex: none; border: 2px solid #e9e1cc; background: #f2eddf; color: #4a5961; }
-.tools button.del { background: #f5d7d2; border-color: #eac1b9; }
 .trash { border: 4px solid #ffebe0; background: #f4c5b7; box-shadow: 0 6px 0 #c58c7d, 0 10px 22px #80544026; }
 .shelf { background: repeating-linear-gradient(90deg, transparent 0 31px, #c6a6740a 31px 32px), linear-gradient(#fff9e9, #f0e0c3);
   border-top: 6px solid #fff9eb; box-shadow: 0 -6px 0 #c8b390, 0 -14px 25px #5c55381a; gap: 22px; scrollbar-width: thin; scrollbar-color: #bca681 #f3e5cc; }
@@ -86,11 +84,12 @@
 .sleepmsg .t { font-size: 38px; line-height: 1.35; color: #fff4d9; text-shadow: none; margin: 12px 0 22px; }
 #album.sleep .placed::after { animation-duration: 6s; }
 
-/* 7 albums */
+/* 8 albums */
 .scene.forest { background: radial-gradient(ellipse at 50% 120%, #4f8a55 0 38%, transparent 39%), linear-gradient(#cfe8d2 0 52%, #7fb683 52% 70%, #5d9a63 70%); }
 .scene.savanna { background: radial-gradient(ellipse at 30% 105%, #c9a04e 0 30%, transparent 31%), linear-gradient(#ffe7b3, #ffd27d 55%, #e2b866 55% 72%, #d4a650 72%); }
 .scene.home { background: repeating-linear-gradient(90deg, #ece2f6 0 80px, #e4d7f1 80px 160px) 0 0 / 100% 66% no-repeat, linear-gradient(#e7dcf3 0 66%, #b98f6a 66% 68%, #c99d75 68%); }
 .scene.kitchen { background: linear-gradient(#fff6dc 0 50%, transparent 50%), repeating-conic-gradient(#ffffff 0 25%, #ffe7a8 0 50%) 0 0 / 80px 80px; }
+.scene.space { background: radial-gradient(ellipse at 50% 125%, #cfc7e6 0 40%, transparent 41%), radial-gradient(circle at 20% 22%, #ffffff 0 2px, transparent 3px) 0 0 / 190px 150px, radial-gradient(circle at 70% 60%, #fff6c9 0 2px, transparent 3px) 0 0 / 230px 170px, linear-gradient(#2c2f6b, #5a5fb0); }
 .scene.kitchen::before { content: ''; position: absolute; left: 0; right: 0; top: 46%; height: 26px; background: #e2a35b; box-shadow: 0 6px 0 #c4843f; }
 .st.cup::before { content: ''; position: absolute; left: -12px; top: -14px; width: 30px; height: 30px; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2048%2048%22%20aria-hidden%3D%22true%22%3E%3Cpath%20d%3D%22M14%2040h20v4H14z%22%20fill%3D%22%23c98a1a%22%2F%3E%3Cpath%20d%3D%22M14%2038h20v4H14z%22%20fill%3D%22%23e9a832%22%2F%3E%3Cpath%20d%3D%22M20%2030h8v9h-8z%22%20fill%3D%22%23e9a832%22%2F%3E%3Cpath%20d%3D%22M12%206h24v12a12%2012%200%200%201-24%200z%22%20fill%3D%22%23e9a832%22%2F%3E%3Cpath%20d%3D%22M12%204h24v12a12%2012%200%200%201-24%200z%22%20fill%3D%22%23ffd25f%22%2F%3E%3Cpath%20d%3D%22M12%209H6v4a7%207%200%200%200%207%207M36%209h6v4a7%207%200%200%201-7%207%22%20fill%3D%22none%22%20stroke%3D%22%23e9a832%22%20stroke-width%3D%224%22%2F%3E%3Cpath%20d%3D%22M19%209v8%22%20stroke%3D%22%23fff4c4%22%20stroke-width%3D%223%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E") center / contain no-repeat; }
 .scenetabs { gap: 12px; }
