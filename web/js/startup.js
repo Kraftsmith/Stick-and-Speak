@@ -11,8 +11,10 @@ import { ECON, SETS } from './data.js';
 import { I } from './icons.js';
 import { today, esc } from './util.js';
 import { say, ru, sfx, renderMute } from './audio.js';
-import { renderHello, renderCoins, overlay, closeOverlay, addCoins } from './ui.js';
+import { renderHello, renderCoins, renderCollN, overlay, closeOverlay, addCoins } from './ui.js';
 import { go, onEnter } from './nav.js';
+import { Cloud } from './cloud.js';
+import { mountSignIn, mountKids } from './account.js';
 
 /* ================= the launch screen ================= */
 // #splash is the first thing in the markup and is drawn before any script runs; here it only goes away.
@@ -62,6 +64,7 @@ export function enterHome(profileId, { greet = false } = {}) {
   U.home = 'home'; U.streak = 0; U.pathTr = 'main'; U.sceneId = SETS[0].id; U.parentThen = null;
   renderHello(); renderCoins(); renderMute();
   go('home');
+  Cloud.onProfile();
   if (greet) say(ru('Привет!'));
   // coins for the first visit of the day; not on the very first day, the child has the starting coins
   if (newDay && !firstEver) setTimeout(() => {
@@ -92,16 +95,32 @@ const T = {
 /* ================= first run ================= */
 // One short screen, shown once on a device without profiles. Nothing is spoken: it is for the grown-up.
 let frLang = deviceLang();
-// "Already have an account?": the sign-in comes with the parent account (cloud-sync); until a handler is set the line is hidden
-let signIn = null;
-export function onSignIn(fn) { signIn = fn; }
+// 'form': the name and the language; 'signin': "Already have an account?" was pressed; 'kids': the children that came
+// from the cloud get their names (startup.md 3.3)
+let frStep = 'form', frKids = [], frWays = false;   // frWays: the server offers a way to sign in
+Cloud.providers().then(w => { frWays = w.length > 0; if (U.current === 'firstrun' && frStep === 'form') renderFirstRun(); });
+function frShow() {
+  $('frForm').style.display = frStep === 'kids' ? 'none' : '';
+  $('frAct').style.display = frStep === 'form' ? '' : 'none';
+  $('frSign').style.display = frStep === 'signin' ? '' : 'none';
+  $('frKids').style.display = frStep === 'kids' ? '' : 'none';
+}
+// after the names: one child goes home, several are asked who plays
+function afterKids() { frStep = 'form'; frKids = []; const r = route(); if (r.screen === 'home') enterHome(r.profileId, { greet: true }); else starters[r.screen](r); }
+function showKids(ids) { frStep = 'kids'; frKids = ids; go('firstrun'); }
 function renderFirstRun() {
   const t = T[frLang] || T.en;
   $('frTitle').textContent = t.title; $('frAsk').textContent = t.ask; $('frLangL').textContent = t.lang;
   $('frName').placeholder = t.eg; $('frStart').textContent = t.start; $('frSkip').textContent = t.skip;
   $('frLangs').innerHTML = LANGS.map(([k, name]) => `<button data-l="${k}" class="${k === frLang ? 'on' : ''}">${name}</button>`).join('');
   $('frLangs').querySelectorAll('button').forEach(b => b.onclick = () => { frLang = b.dataset.l; renderFirstRun(); });
-  $('frAcc').textContent = t.account; $('frAcc').style.display = signIn ? '' : 'none';
+  // signed in with an empty cloud: the line has done its work, the child made here becomes the account's first
+  $('frAcc').textContent = t.account; $('frAcc').style.display = Cloud.account() || !frWays ? 'none' : '';
+  if (frStep === 'signin') mountSignIn($('frSign'), { lang: frLang, firstRun: true,
+    onBack: () => { frStep = 'form'; renderFirstRun(); },
+    onDone: r => { if (r.kids && r.kids.length) showKids(r.kids); else { frStep = 'form'; renderFirstRun(); } } });
+  if (frStep === 'kids') mountKids($('frKids'), frKids, frLang, afterKids);
+  frShow();
 }
 function firstRunDone(withName) {
   const id = newProfile({ kidName: withName ? $('frName').value.trim() : '', lang: frLang });
@@ -110,7 +129,7 @@ function firstRunDone(withName) {
 $('frStart').onclick = () => firstRunDone(true);
 $('frSkip').onclick = () => firstRunDone(false);
 $('frName').onkeydown = ev => { if (ev.key === 'Enter') firstRunDone(true); };
-$('frAcc').onclick = () => { if (signIn) signIn(); };
+$('frAcc').onclick = () => { frStep = 'signin'; renderFirstRun(); };
 onEnter('firstrun', renderFirstRun);
 
 /* ================= who's playing? ================= */
@@ -145,20 +164,35 @@ onEnter('who', renderWho);
 /* ================= boot ================= */
 // What the last cold start did, for the Testing tab ("Boot log")
 export const bootLog = { at: '', route: null, splashMs: 0, pull: 'no account on this device', profiles: [] };
+// The cloud changed the game on screen, or the children on the device (startup.md 4.3): redrawn without sound or motion
+Cloud.onChange(({ applied, profiles }) => {
+  if (applied) { renderHello(); renderCoins(); renderCollN(); renderMute(); if (U.current === 'path') go('path'); }
+  if (profiles && U.current === 'who') { const r = route(); if (r.screen === 'who') showWho(); else starters[r.screen](r); }
+});
 // A cold start (startup.md 4.1). The numbers are the steps of the spec.
 export async function boot() {
   // 2. what is on the device: a save from before profiles becomes profile 1
   const migrated = Profiles.migrate();
   // 3. the screen after the launch screen, by local data
-  const r = route();
-  // 4-5. the cloud copy of the progress is asked for here and applied if it comes in time (cloud-sync; not yet)
-  const pulled = null;
+  let r = route();
+  // 4-5. the cloud copy of the progress: asked for now, applied if it comes before the launch screen must leave.
+  // A late answer is applied by cloud.js in a safe moment. The way back from Google / Apple finishes the sign-in first.
+  let inTime = false, pulledRows = null;
+  const pulled = Promise.resolve(Cloud.resume()).then(back => {
+    if (back && back.step === 'done' && back.kids.length && back.kids.length === Profiles.list().length) frKids = back.kids;
+    return Cloud.bootPull();
+  }).then(rows => { inTime = true; pulledRows = rows; return rows; });
   // 6. the launch screen leaves; the chosen screen is drawn under it first
   await splashTime(pulled);
-  starters[r.screen](r);
+  const asked = Cloud.lastPull.text;
+  // the cloud does not change the route, with two exceptions: the child the route led to was deleted on another
+  // device, and the device has just got its children from the cloud (they are named first)
+  if (frKids.length) showKids(frKids);
+  else { if (r.screen === 'who' ? Profiles.list().length < 2 : !(r.profileId && Profiles.has(r.profileId))) r = route(); starters[r.screen](r); }
   hideSplash();
   Object.assign(bootLog, { at: new Date().toLocaleTimeString(), route: r, splashMs: Math.round(performance.now()),
+    pull: !pulledRows && inTime ? asked : inTime ? asked + ', in time' : 'no answer before the launch screen left: applied later, in a safe moment',
     profiles: Profiles.list().map(p => { const l = Profiles.load(p.id).local;
-      return { id: p.id, name: l.kidName, baseVersion: l.baseVersion, dirty: l.dirty, action: p.id === migrated ? 'migrated from the old save' : 'local, unchanged' }; }) });
+      return { id: p.id, name: l.kidName, baseVersion: l.baseVersion, dirty: l.dirty, action: p.id === migrated ? 'migrated from the old save' : pulledRows && pulledRows[p.id] ? pulledRows[p.id].action : 'local, unchanged' }; }) });
   return r;
 }

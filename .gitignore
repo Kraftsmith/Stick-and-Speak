@@ -25,3 +25,6 @@ AuthKey_*.p8
 
 # what Vercel serves, built by site/build.mjs
 dist/
+
+.vercel
+.env*

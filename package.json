@@ -1,0 +1,11 @@
+{
+  "name": "stick-and-play-server",
+  "private": true,
+  "type": "module",
+  "description": "Server side of Stick & Play: the functions in api/ (Specs/features/cloud-sync.md). The game itself is web/, without a build step.",
+  "engines": { "node": ">=22" },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.0",
+    "better-auth": "^1.3.0"
+  }
+}

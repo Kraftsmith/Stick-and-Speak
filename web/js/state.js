@@ -25,7 +25,18 @@ const fresh = () => ({
 export const S = fresh();
 let PID = null;   // id of the profile S belongs to; null until one is chosen
 export const profileId = () => PID;
-export const save = () => { if (PID) Profiles.save(PID, S); };
+// whoever needs to know that the game changed (the cloud copy, cloud.js) registers here; a save that only repairs a
+// loaded game is not a change
+let onSaved = null, quiet = false;
+export const watchSave = fn => { onSaved = fn; };
+export const save = () => { if (!PID) return; Profiles.save(PID, S); if (onSaved && !quiet) onSaved(PID); };
+// the stored game of the playing profile was replaced (by the cloud copy): S is filled again from it
+export const reloadProfile = () => !!PID && useProfile(PID, false);
+// the stored games were replaced as a whole (a backup file, backup.js): the running game belongs to none of them
+// and must not be written over them before the page reloads
+export const detach = () => { PID = null; };
+// the stored profile got another id (cloud.js): the running game follows it
+export const renameProfile = (from, to) => { if (PID === from) PID = to; };
 // makes the profile the playing one and loads its saved game into S, repairing what old saves got wrong
 // `played` false: only look at the profile ("Who's playing?" shows the settings of the child who played last)
 export function useProfile(id, played = true) {
@@ -71,7 +82,7 @@ export function useProfile(id, played = true) {
   if (!LANGS.some(l => l[0] === S.lang)) S.lang = deviceLang();   // language of the instructions (3.10)
   if (!AVATARS.includes(S.avatar)) S.avatar = freeAvatar(id);    // the picture on "Who's playing?"
   if (S.hints == null) S.hints = true;           // spoken task instructions in lessons; praise and English words always play
-  save();
+  quiet = true; save(); quiet = false;
   return true;
 }
 /* ================= children ================= */

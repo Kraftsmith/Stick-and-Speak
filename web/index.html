@@ -189,11 +189,19 @@
   <!-- FIRST RUN: one screen for the grown-up, text only, shown once on a new device -->
   <section class="screen" id="firstrun">
     <div class="frcard">
-      <div class="frtitle" id="frTitle"></div>
-      <label class="frrow"><span id="frAsk"></span><input type="text" id="frName" maxlength="12" autocomplete="off"></label>
-      <div class="frrow"><span id="frLangL"></span><span class="frlangs" id="frLangs"></span></div>
-      <div class="frrow fract"><button class="btn orange" id="frStart"></button><button class="frskip" id="frSkip"></button></div>
-      <button class="fracc" id="frAcc" style="display:none"></button>
+      <div id="frForm">
+        <div class="frtitle" id="frTitle"></div>
+        <label class="frrow"><span id="frAsk"></span><input type="text" id="frName" maxlength="12" autocomplete="off"></label>
+        <div class="frrow"><span id="frLangL"></span><span class="frlangs" id="frLangs"></span></div>
+        <div id="frAct">
+          <div class="frrow fract"><button class="btn orange" id="frStart"></button><button class="frskip" id="frSkip"></button></div>
+          <button class="fracc" id="frAcc"></button>
+        </div>
+        <!-- "Already have an account?": the ways to sign in replace the buttons (js/account.js) -->
+        <div id="frSign" style="display:none"></div>
+      </div>
+      <!-- after a sign-in: the children that came from the cloud get their names -->
+      <div id="frKids" style="display:none"></div>
     </div>
   </section>
 

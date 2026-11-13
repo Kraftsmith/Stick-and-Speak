@@ -1,5 +1,6 @@
 // The album: one page per set; its shelf holds the whole set. Stickers are tried on and bought on the page, dragged
 // from the shelf, moved, scaled, rotated, flipped, put back (features/stick.md).
+import { Cloud } from './cloud.js';
 import { $, frame, pt, rectIn, capture } from './stage.js';
 import { U } from './session.js';
 import { S, save, sceneOpen, timeUp, parentAcc, parentDat } from './state.js';
@@ -20,6 +21,7 @@ export function buySticker(st) {
   S.coins -= st.price;
   S.bought[st.key] = (S.bought[st.key] || 0) + 1;
   save(); renderCoins(true);
+  Cloud.pushSoon();   // a purchase goes to the cloud copy at once (cloud-sync.md 4.4)
   return { first, newPage };
 }
 // the trophy for a complete set, once per set

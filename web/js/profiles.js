@@ -4,7 +4,8 @@
 //   sticker-profiles       [ { id, createdAt, lastPlayedAt } ]   the order is the order of creation
 //   sticker-current        id of the profile that is playing
 //   sticker-profile-<id>   the saved game: progress, coins, stickers, albums, settings
-//   sticker-local-<id>     { kidName, mute, baseVersion, dirty }: what never leaves this device
+//   sticker-local-<id>     { kidName, mute, baseVersion, dirty, changedAt }: what never leaves this device
+//   sticker-backup-<date>  profiles put aside before the cloud copy or a backup file replaced or removed them, kept for 30 days
 //   sticker-device         { askWho: 'kids' | 'parent' | 'never', deviceId }
 //   sticker-broken-<date>  the text of a saved game that could not be read
 import { today } from './util.js';
@@ -89,6 +90,58 @@ export function patch(id, fields) { const { state, local } = load(id); save(id, 
 // baseVersion and dirty belong to the copy on this device (the cloud sync reads and sets them)
 export function setLocal(id, patch) { write(LOCAL(id), Object.assign(localOf(id), patch)); }
 
+/* ================= the cloud copy (cloud.js) ================= */
+// a profile that came from the cloud: it keeps the id it has there. Returns false at the limit or for a known id.
+export function adopt(id, state, local = {}) {
+  const l = list();
+  if (l.length >= MAX_PROFILES || l.some(p => p.id === id)) return false;
+  write(LIST, [...l, { id, createdAt: Date.now(), lastPlayedAt: 0 }]);
+  write(LOCAL(id), Object.assign({ kidName: '', mute: false, baseVersion: 0, dirty: false }, local));
+  write(DOC(id), state);
+  return true;
+}
+// removes a profile whatever the list holds (the last one too): the cloud decides, not the parent
+export function drop(id) {
+  write(LIST, list().filter(p => p.id !== id));
+  ls.removeItem(DOC(id)); ls.removeItem(LOCAL(id));
+  if (current() === id) { const p = lastPlayed(); if (p) ls.setItem(CURRENT, p.id); else ls.removeItem(CURRENT); }
+}
+// the profile gets a new id (its old one belongs to another account in the cloud); returns the new id
+export function reid(id) {
+  const l = list(), p = l.find(x => x.id === id);
+  if (!p) return null;
+  const to = uuid(), doc = ls.getItem(DOC(id)), local = ls.getItem(LOCAL(id));
+  p.id = to; write(LIST, l);
+  if (doc != null) ls.setItem(DOC(to), doc);
+  if (local != null) ls.setItem(LOCAL(to), local);
+  ls.removeItem(DOC(id)); ls.removeItem(LOCAL(id));
+  if (current() === id) ls.setItem(CURRENT, to);
+  return to;
+}
+// puts profiles aside before they are replaced or removed: one record per day, kept for 30 days
+const BACKUP = 'sticker-backup-', KEEP_DAYS = 30;
+export function backup(ids) {
+  const key = BACKUP + today(), rec = read(key, { profiles: [] });
+  ids.forEach(id => { if (has(id)) rec.profiles.push({ id, at: Date.now(), ...load(id) }); });
+  if (rec.profiles.length) write(key, rec);
+}
+export function backups() { return Object.keys(ls).filter(k => k.startsWith(BACKUP)).sort().map(k => ({ key: k, ...read(k, { profiles: [] }) })); }
+export function purgeBackups() {
+  const limit = new Date(Date.now() - KEEP_DAYS * 864e5).toISOString().slice(0, 10);
+  Object.keys(ls).filter(k => k.startsWith(BACKUP) && k.slice(BACKUP.length) < limit).forEach(k => ls.removeItem(k));
+}
+
+/* ================= the backup file (backup.js) ================= */
+// every profile on the device gives way to the given ones: [ { id, createdAt, lastPlayedAt, state, local } ]
+export function replaceAll(profiles, currentId) {
+  list().forEach(p => { ls.removeItem(DOC(p.id)); ls.removeItem(LOCAL(p.id)); });
+  write(LIST, profiles.map(p => ({ id: p.id, createdAt: p.createdAt || Date.now(), lastPlayedAt: p.lastPlayedAt || 0 })));
+  profiles.forEach(p => { write(DOC(p.id), p.state); write(LOCAL(p.id), Object.assign({ kidName: '', mute: false, baseVersion: 0, dirty: false }, p.local)); });
+  ls.setItem(CURRENT, profiles.some(p => p.id === currentId) ? currentId : profiles[0].id);
+}
+// bytes the saved games and everything else of the app take in localStorage (two bytes a character)
+export function size() { return Object.keys(ls).filter(k => k.startsWith('sticker-')).reduce((n, k) => n + (k.length + (ls.getItem(k) || '').length) * 2, 0); }
+
 /* ================= the device ================= */
 export function device() {
   const d = read(DEVICE, {});
@@ -116,4 +169,5 @@ export function wipe() {
   Object.keys(ls).filter(k => k.startsWith('sticker-') || OLD_KEYS.includes(k)).forEach(k => ls.removeItem(k));
 }
 
-export const Profiles = { list, has, current, create, switch: switchTo, remove, load, save, patch, setLocal, device, setDevice, migrate, lastPlayed, wipe };
+export const Profiles = { list, has, current, create, switch: switchTo, remove, load, save, patch, setLocal, device, setDevice, migrate, lastPlayed, wipe,
+  adopt, drop, reid, backup, backups, purgeBackups, replaceAll, size };

@@ -1,7 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "installCommand": "",
+  "installCommand": "npm install",
   "buildCommand": "node site/build.mjs",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "regions": ["fra1"],
+  "rewrites": [
+    { "source": "/api/auth/:path*", "destination": "/api/auth?path=:path*" }
+  ]
 }

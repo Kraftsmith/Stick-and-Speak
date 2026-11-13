@@ -35,3 +35,17 @@
 .whocard.last { width: 276px; height: 352px; border-color: #ffe2a1; box-shadow: 0 10px 0 #d9b56a, 0 22px 30px #384c4826; animation: hop 5s ease-in-out infinite; }
 .whocard:active { transform: translateY(6px); }
 .whocard.picked { animation: none; transform: scale(1.18); }
+
+/* the first run after "Already have an account?": the sign-in in place of the buttons, then the children from the cloud */
+#frSign { margin-top: 30px; }
+#frSign .signin .sirow { justify-content: center; }
+#frSign .signin .sinote, #frSign .signin .sierr { text-align: center; }
+.kidstep .frtitle { margin-bottom: 20px; }
+.kidrow { display: flex; align-items: center; gap: 18px; padding: 10px 0; border-bottom: 2px solid #eeead9; }
+.kidrow .kav { flex: none; width: 96px; height: 96px; font-size: 76px; line-height: 1; display: grid; place-items: center; }
+.kidrow .kav .spic { display: block; }
+.kidrow .kmid { flex: none; width: 300px; display: flex; flex-direction: column; gap: 4px; }
+.kidrow .kmid input { font: inherit; font-size: 28px; padding: 12px 16px; border: 3px solid #d9d4c3; border-radius: 18px; color: #333; background: #fff; min-width: 0; }
+.kidrow .kmid small { font-size: 18px; color: #8a867c; }
+.kidrow .frlangs button { min-height: 50px; font-size: 20px; border-radius: 16px; }
+.kidstep .fract { margin-top: 18px; }

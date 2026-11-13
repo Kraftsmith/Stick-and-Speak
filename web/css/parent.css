@@ -51,6 +51,14 @@
 .pkrow { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 #kadd { margin-top: 14px; }
 .pkask { margin-top: 18px; padding-top: 16px; border-top: 1px solid #e6e2d7; }
+/* Settings: where the progress lives, the backup file, the Home screen hint */
+.pdev .pnote { margin: 0 0 12px; font-size: 22px; line-height: 1.35; }
+.pdev .pkrow { margin-bottom: 12px; }
+.pdev .phome { padding: 14px 16px; border-radius: 16px; background: #f1f6ee; color: #4e535c; }
+.pdev .phome b { color: #333; }
+.pdev .phome button { margin-left: 8px; }
+.pdev .pbad { color: #a4483f; }
+.pdev .pgood { color: #466c67; }
 .pboot { font-size: 22px; }
 .pboot td:last-child { font-weight: 400; }
 
@@ -70,3 +78,27 @@
 .vtab tr.marked td { background: #fbe9df; }
 .vtab tr.now td { background: #e3f1ec; }
 .vout { width: 100%; height: 160px; font: 18px/1.4 monospace; margin-bottom: 12px; }
+
+/* the parent's account (js/account.js): the sign-in and the lines of the cloud copy */
+.pacc .accmail { font-weight: 800; color: #333; margin-bottom: 6px; }
+.pacc .accst { font-size: 24px; color: #466c67; margin-bottom: 14px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.pacc .accst.offline, .pacc .accst.saving { color: #8a867c; }
+.pacc .accst.relogin, .pacc .accst.update, .pacc .accst.warn { color: #a4483f; }
+.pacc .accbtns { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 12px; color: #66636a; font-size: 24px; }
+.pacc .accbtns .pkdel { margin-left: auto; }
+.pacc .accbtns input, .signin input { font: inherit; font-size: 26px; padding: 14px 18px; border: 2px solid #c9c7bd; border-radius: 16px; color: #333; background: #fff; }
+.pacc .accbtns input { width: 220px; }
+.pacc .pnote { margin: 4px 0 12px; font-size: 22px; line-height: 1.35; }
+.signin .sirow { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.signin .sirow input { flex: 1; min-width: 260px; }
+.signin #siCode { flex: none; width: 220px; min-width: 0; letter-spacing: 8px; text-align: center; }
+.signin button { min-height: 72px; padding: 10px 22px; border: 2px solid #c9c7bd; border-radius: 16px; background: #fff; color: #4e535c; font: inherit; font-size: 24px; cursor: pointer; }
+.signin button.on { background: #466c67; border-color: #466c67; color: #fff; }
+.signin button:disabled, .pacc button:disabled { opacity: .45; cursor: default; }
+.signin .sinote, .kidstep .sinote { font-size: 20px; color: #8a867c; margin: 10px 0; line-height: 1.35; }
+.signin .sierr, .pacc .sierr { font-size: 22px; color: #a4483f; margin-top: 12px; }
+.signin .silink { display: block; margin: 18px auto 0; border: none; background: none; min-height: 0; text-decoration: underline; color: #7c7a80; }
+.found b { display: block; color: #333; margin-bottom: 10px; }
+.found .frow { display: flex; gap: 16px; padding: 8px 0; font-size: 24px; color: #4e535c; }
+.found .frow > span:first-child { flex: none; width: 250px; color: #66636a; }
+.found small { display: block; font-size: 20px; color: #8a867c; }

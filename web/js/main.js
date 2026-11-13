@@ -13,9 +13,11 @@ import { $ } from './stage.js';
 import { registerOffline, fullscreenOnFirstTouch } from './platform.js';
 import { VERSION } from './version.js';
 import { boot } from './startup.js';
+import { Cloud } from './cloud.js';
 
 /* ================= start ================= */
 $('note').textContent = 'Stick & Play · ' + VERSION;
 registerOffline();
 fullscreenOnFirstTouch();
+Cloud.init();
 boot();

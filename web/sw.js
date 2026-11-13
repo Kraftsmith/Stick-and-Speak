@@ -8,13 +8,13 @@ import { VOICE } from './js/gen/voice.js';
 import { SFX } from './js/gen/sfx.js';
 import { sfxFile } from './js/data.js';
 
-const CACHE = 'stick-and-speak-13';   // the name keeps the app's first name on purpose; 13: new splash and icon (Stick & Play)
+const CACHE = 'stick-and-speak-15';   // the name keeps the app's first name on purpose; 15: the backup file (backup.js)
 const SHELL = [
   './', 'index.html', 'manifest.json', 'icon.png',
   'css/base.css', 'css/home.css', 'css/learn.css', 'css/lesson.css', 'css/album.css', 'css/collection.css', 'css/parent.css', 'css/startup.css',
   'js/main.js', 'js/version.js', 'js/platform.js', 'js/icons.js', 'js/gen/art.js', 'js/gen/voice.js', 'js/gen/sfx.js', 'js/data.js', 'js/util.js', 'js/stage.js',
   'js/session.js', 'js/startup.js', 'js/profiles.js', 'js/state.js', 'js/audio.js', 'js/ui.js', 'js/nav.js', 'js/lessons.js', 'js/quiz.js', 'js/trace.js', 'js/puzzle.js',
-  'js/pairs.js', 'js/lines.js', 'js/race.js', 'js/path.js', 'js/album.js', 'js/collection.js', 'js/parent.js', 'js/voicelist.js',
+  'js/pairs.js', 'js/lines.js', 'js/race.js', 'js/path.js', 'js/album.js', 'js/collection.js', 'js/parent.js', 'js/voicelist.js', 'js/cloud.js', 'js/account.js', 'js/doc.js', 'js/backup.js',
 ];
 const ARTWORK = ['img/splash.jpg', ...BG.map(b => `img/bg/${b}.jpg`), ...Object.entries(ART).flatMap(([set, words]) => words.map(w => `img/stickers/${set}/${w}.png`)), ...(RACE_ART || []).map(n => `img/race/${n}.png`)];
 const MUSIC = ['audio/main.mp3', 'audio/lesson.mp3'];
@@ -50,6 +50,8 @@ self.addEventListener('activate', ev => {
 self.addEventListener('fetch', ev => {
   const req = ev.request, url = new URL(req.url);
   if (req.method !== 'GET' || url.origin !== location.origin) return;
+  // the cloud copy of the progress must never come from a cache (cloud-sync.md 5.3)
+  if (url.pathname.startsWith('/api/')) return;
   ev.respondWith(isAsset(url) ? cacheFirst(req) : networkFirst(req));
 });
 
