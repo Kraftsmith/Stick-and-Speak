@@ -22,3 +22,6 @@ Art/stickers/**/*.last.txt
 *.p12
 *.mobileprovision
 AuthKey_*.p8
+
+# what Vercel serves, built by site/build.mjs
+dist/

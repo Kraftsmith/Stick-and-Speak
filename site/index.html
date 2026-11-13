@@ -44,7 +44,7 @@
   <div class="wrap hero-grid">
     <div class="hero-text">
       <h1>English that sticks.</h1>
-      <p class="lead">Kids play short lessons, earn coins and fill sticker albums. Every sticker is an English word.</p>
+      <p class="lead">Kids play to collect stickers. Every sticker is an English word.</p>
       <div class="cta">
         <a class="btn btn-play" href="../web/"><span class="ico" data-icon="play"></span>Play free</a>
         <a class="more" href="#how">See how it works</a>
@@ -56,42 +56,49 @@
     </div>
 
     <figure class="hero-photo">
-      <img src="img/hero-kid.jpg" srcset="img/hero-kid-900.jpg 900w, img/hero-kid.jpg 1536w" sizes="(min-width: 980px) 52vw, 100vw"
+      <img src="img/hero-kid.jpg" srcset="img/hero-kid-900.jpg 900w, img/hero-kid.jpg 1536w" sizes="(min-width: 980px) 70vw, 100vw"
         width="1536" height="1024" alt="A five-year-old girl on a sofa plays the sticker album game on a tablet" fetchpriority="high">
     </figure>
   </div>
 </section>
 
-<!-- 6.3 How it works -->
+<!-- 6.3 How it works: the two buttons of the game -->
 <section class="sec" id="how">
   <div class="wrap">
-    <h2>Play. Earn. Stick.</h2>
-    <p class="sub">One simple loop that a five-year-old gets in a minute.</p>
-    <ol class="steps">
-      <li class="step s-play">
-        <div class="tile t-play"><span class="ico" data-icon="play"></span><b>Play</b></div>
-        <h3>A 3–5 minute lesson</h3>
-        <p>Words, letters and a little game at the end. Everything is spoken, nothing to read.</p>
-      </li>
-      <li class="step s-coin">
-        <div class="tile t-coin"><span class="ico" data-icon="coin"></span><b>Coins</b></div>
-        <h3>Coins for every right answer</h3>
-        <p>A wrong answer costs nothing. After two misses the game shows the way.</p>
-      </li>
-      <li class="step s-stick">
-        <div class="tile t-stick"><span class="ico" data-icon="stick"></span><b>Stick</b></div>
-        <h3>A new sticker for the album</h3>
-        <p>The child picks a sticker, buys it with coins and decorates the page.</p>
-      </li>
-    </ol>
+    <h2>Play. Stick.</h2>
+    <div class="duo">
+
+      <article class="panel p-play">
+        <header><span class="ico" data-icon="play"></span><h3>Play</h3></header>
+        <ol class="path" aria-label="A lesson path: two lessons done, the third is next">
+          <svg class="line" viewBox="0 0 600 420" aria-hidden="true"><path class="todo" d="M345 100C378.3 133.3 373.8 202 396 244C418.2 286 452 345.7 478 352C504 358.3 539.7 293.7 552 282"/><path class="walked" d="M60 62C82.7 59 148.5 37.7 196 44C243.5 50.3 311.7 66.7 345 100"/></svg>
+          <li class="done" style="left:10.00%;top:14.76%"><b><img src="../web/img/stickers/farm/cow.png" alt="Words"></b><span class="g below"><span class="ico" data-icon="pairs"></span><em>Pairs</em></span></li>
+          <li class="done" style="left:32.67%;top:10.48%"><b>S</b><span class="g below"><span class="ico" data-icon="lines"></span><em>Letter balls</em></span></li>
+          <li class="now" style="left:57.50%;top:23.81%"><b><img src="../web/img/stickers/farm/horse.png" alt="Words"></b><span class="g right"><span class="ico"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="5" width="17" height="17" rx="4" fill="#7fd08a"/><rect x="26" y="5" width="17" height="17" rx="4" fill="#ffb66c"/><rect x="5" y="26" width="17" height="17" rx="4" fill="#7da2e8"/><rect x="28" y="28" width="17" height="17" rx="4" fill="#ff8fb3" transform="rotate(12 36 36)"/></svg></span><em>Puzzle</em></span></li>
+          <li class="lock" style="left:66.00%;top:58.10%"><b>A</b><span class="g left"><span class="ico" data-icon="lines"></span><em>Letter balls</em></span></li>
+          <li class="lock" style="left:79.67%;top:83.81%"><b><span class="ico" data-icon="review"></span></b><span class="g left"><span class="ico" data-icon="race"></span><em>Race</em></span></li>
+          <li class="goal" style="left:92.00%;top:67.14%"><b><span class="ico" data-icon="gold"></span></b></li>
+        </ol>
+      </article>
+
+      <article class="panel p-stick">
+        <header><span class="ico" data-icon="stick"></span><h3>Stick</h3></header>
+        <a class="fan" href="#albums" aria-label="See the seven albums">
+          <span style="background-image:url(../web/img/bg/farm.jpg)"><img src="../web/img/stickers/farm/cow.png" alt=""><em>Farm</em></span>
+          <span style="background-image:url(../web/img/bg/sea.jpg)"><img src="../web/img/stickers/sea/whale.png" alt=""><em>Sea</em></span>
+          <span style="background-image:url(../web/img/bg/forest.jpg)"><img src="../web/img/stickers/forest/fox.png" alt=""><em>Forest</em></span>
+          <span style="background-image:url(../web/img/bg/toys.jpg)"><img src="../web/img/stickers/toys/teddy-bear.png" alt=""><em>Toys</em></span>
+        </a>
+      </article>
+
+    </div>
   </div>
 </section>
 
 <!-- 6.4 What is inside -->
 <section class="sec tint-mint" id="inside">
   <div class="wrap">
-    <h2>Six ways to play with a word</h2>
-    <p class="sub">Each lesson mixes them, so no two lessons feel the same. <span class="tip">Point at a card to watch it play.</span></p>
+    <h2>Play</h2>
     <div class="games">
 
       <article class="game">
@@ -169,7 +176,7 @@
 <!-- 6.5 Albums and stickers -->
 <section class="sec" id="albums">
   <div class="wrap">
-    <h2>7 albums. 84 stickers.</h2>
+    <h2>Stick</h2>
     <p class="sub">Every sticker is a word. Pick an album below and try it.</p>
     <div class="try">
       <div class="tablet" aria-label="Sticker album you can try">
@@ -182,13 +189,6 @@
     </div>
   </div>
   <div class="albums" id="albumRow" aria-label="Albums"></div>
-  <div class="wrap">
-    <ul class="rarity">
-      <li><b>Common</b> stickers say their name.</li>
-      <li><b>Rare</b> stickers also make a sound: the tractor rumbles, the cat meows.</li>
-      <li><b>Special</b> stickers move on the page.</li>
-    </ul>
-  </div>
 </section>
 
 <!-- 6.6 What kids learn -->
