@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stick &amp; Speak — English that sticks</title>
+<meta name="description" content="A sticker game that teaches English words and letters to kids aged 4–6. Short lessons, 84 stickers, 7 albums. No ads.">
+<meta name="theme-color" content="#FFB648">
+<link rel="icon" href="../web/icon.png">
+<!-- Prototype only: the released site serves this font from its own domain (Specs/Web/Web.md, section 13). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+
+<header class="top">
+  <a class="logo" href="#hero"><img src="../web/icon.png" alt="" width="40" height="40"><span>Stick &amp; Speak</span></a>
+  <nav class="links" aria-label="Sections">
+    <a href="#how">How it works</a>
+    <a href="#inside">Inside</a>
+    <a href="#albums">Albums</a>
+    <a href="#parents">For parents</a>
+    <a href="#faq">FAQ</a>
+  </nav>
+  <label class="lang"><span class="sr">Language</span>
+    <select aria-label="Language">
+      <option selected>English</option>
+      <option disabled>Русский — soon</option>
+      <option disabled>Українська — soon</option>
+      <option disabled>Deutsch — soon</option>
+      <option disabled>Français — soon</option>
+      <option disabled>Español — soon</option>
+    </select>
+  </label>
+  <a class="btn btn-play small" href="../web/">Play free</a>
+</header>
+
+<main>
+
+<!-- 6.2 First screen -->
+<section class="hero" id="hero">
+  <div class="wrap hero-grid">
+    <div class="hero-text">
+      <h1>English that sticks.</h1>
+      <p class="lead">Kids play short lessons, earn coins and fill sticker albums. Every sticker is an English word.</p>
+      <div class="cta">
+        <a class="btn btn-play" href="../web/"><span class="ico" data-icon="play"></span>Play free</a>
+        <a class="more" href="#how">See how it works</a>
+      </div>
+      <ul class="facts">
+        <li>Ages 4–6</li><li>No ads</li><li>Works offline</li>
+      </ul>
+      <p class="soon">Plays in your browser today. App Store and Google Play are coming.</p>
+    </div>
+
+    <figure class="hero-photo">
+      <img src="img/hero-kid.jpg" srcset="img/hero-kid-900.jpg 900w, img/hero-kid.jpg 1536w" sizes="(min-width: 980px) 52vw, 100vw"
+        width="1536" height="1024" alt="A five-year-old girl on a sofa plays the sticker album game on a tablet" fetchpriority="high">
+    </figure>
+  </div>
+</section>
+
+<!-- 6.3 How it works -->
+<section class="sec" id="how">
+  <div class="wrap">
+    <h2>Play. Earn. Stick.</h2>
+    <p class="sub">One simple loop that a five-year-old gets in a minute.</p>
+    <ol class="steps">
+      <li class="step s-play">
+        <div class="tile t-play"><span class="ico" data-icon="play"></span><b>Play</b></div>
+        <h3>A 3–5 minute lesson</h3>
+        <p>Words, letters and a little game at the end. Everything is spoken, nothing to read.</p>
+      </li>
+      <li class="step s-coin">
+        <div class="tile t-coin"><span class="ico" data-icon="coin"></span><b>Coins</b></div>
+        <h3>Coins for every right answer</h3>
+        <p>A wrong answer costs nothing. After two misses the game shows the way.</p>
+      </li>
+      <li class="step s-stick">
+        <div class="tile t-stick"><span class="ico" data-icon="stick"></span><b>Stick</b></div>
+        <h3>A new sticker for the album</h3>
+        <p>The child picks a sticker, buys it with coins and decorates the page.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<!-- 6.4 What is inside -->
+<section class="sec tint-mint" id="inside">
+  <div class="wrap">
+    <h2>Six ways to play with a word</h2>
+    <p class="sub">Each lesson mixes them, so no two lessons feel the same. <span class="tip">Point at a card to watch it play.</span></p>
+    <div class="games">
+
+      <article class="game">
+        <div class="mock m-find">
+          <div class="say"><span class="ico" data-icon="speaker"></span>cow</div>
+          <div class="row">
+            <i><img src="../web/img/stickers/farm/pig.png" alt=""></i>
+            <i class="ok"><img src="../web/img/stickers/farm/cow.png" alt=""></i>
+            <i><img src="../web/img/stickers/farm/duck.png" alt=""></i>
+          </div>
+          <span class="finger"></span>
+        </div>
+        <h3>Find the picture</h3>
+        <p>The voice says a word, the child taps the picture.</p>
+      </article>
+
+      <article class="game">
+        <div class="mock m-trace">
+          <svg viewBox="0 0 120 120" aria-hidden="true">
+            <path class="s-bg" d="M82 36C74 18 38 18 38 42C38 62 84 56 82 82C80 104 44 104 36 86"/>
+            <path class="s-ink" pathLength="100" d="M82 36C74 18 38 18 38 42C38 62 84 56 82 82C80 104 44 104 36 86"/>
+            <path class="s-dash" d="M82 36C74 18 38 18 38 42C38 62 84 56 82 82C80 104 44 104 36 86"/>
+            <g class="fing"><path transform="scale(.7) rotate(-20) translate(-17 -3)" d="M12 33V8a5 5 0 0 1 10 0V23a3.5 3.5 0 0 1 7 0a3.5 3.5 0 0 1 7 0a3.5 3.5 0 0 1 7 0V38a14 14 0 0 1-14 14h-5c-5 0-8.5-2.500-11-7L5 34a3.600 3.600 0 0 1 6-4z"/></g>
+          </svg>
+        </div>
+        <h3>Trace the letter</h3>
+        <p>A finger follows the shape and the letter comes alive.</p>
+      </article>
+
+      <article class="game">
+        <div class="mock m-puzzle">
+          <div class="pz"><b></b><b></b><b></b><b class="out"></b></div>
+        </div>
+        <h3>Puzzle</h3>
+        <p>4 to 9 pieces. The finished picture says its name.</p>
+      </article>
+
+      <article class="game">
+        <div class="mock m-pairs">
+          <div class="cards">
+            <b></b><b class="up"><img src="../web/img/stickers/farm/sheep.png" alt=""></b><b></b>
+            <b></b><b></b><b class="up"><img src="../web/img/stickers/farm/sheep.png" alt=""></b>
+          </div>
+        </div>
+        <h3>Pairs</h3>
+        <p>A memory game where every card speaks English.</p>
+      </article>
+
+      <article class="game">
+        <div class="mock m-race">
+          <div class="gate"><i><img src="../web/img/stickers/farm/cat.png" alt=""></i><i class="hit"><img src="../web/img/stickers/farm/dog.png" alt=""></i></div>
+          <div class="road"><span class="ico coin" data-icon="coin"></span><img class="car" src="../web/img/race/car-red.png" alt=""></div>
+        </div>
+        <h3>Race</h3>
+        <p>The word tells which lane has the coin.</p>
+      </article>
+
+      <article class="game">
+        <div class="mock m-balls">
+          <div class="grid">
+            <b class="g">D</b><b></b><b></b><b class="b">P</b><b></b>
+            <b></b><b class="r">C</b><b class="r">O</b><b class="r last">W</b><b></b>
+            <b class="b">I</b><b></b><b class="g">O</b><b></b><b class="g">G</b>
+          </div>
+          <i class="won"><img src="../web/img/stickers/farm/cow.png" alt=""></i>
+        </div>
+        <h3>Letter balls</h3>
+        <p>Balls of one colour line up and spell a word.</p>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- 6.5 Albums and stickers -->
+<section class="sec" id="albums">
+  <div class="wrap">
+    <h2>7 albums. 84 stickers.</h2>
+    <p class="sub">Every sticker is a word. Pick an album below and try it.</p>
+    <div class="try">
+      <div class="tablet" aria-label="Sticker album you can try">
+        <div class="screen-in">
+          <div class="page" id="page"></div>
+          <div class="tray" id="tray"></div>
+        </div>
+      </div>
+      <p class="hint"><span class="hand" aria-hidden="true">☝</span> Try it: drag a sticker onto the page. Tap it to hear the word.</p>
+    </div>
+  </div>
+  <div class="albums" id="albumRow" aria-label="Albums"></div>
+  <div class="wrap">
+    <ul class="rarity">
+      <li><b>Common</b> stickers say their name.</li>
+      <li><b>Rare</b> stickers also make a sound: the tractor rumbles, the cat meows.</li>
+      <li><b>Special</b> stickers move on the page.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 6.6 What kids learn -->
+<section class="sec tint-warm" id="learn">
+  <div class="wrap">
+    <h2>What kids pick up</h2>
+    <p class="sub">No drills. Words come back again and again while the child plays.</p>
+    <div class="learn">
+      <article><b class="num">56</b><h3>Words</h3><p>Seven themes, a native voice and no translation: the word goes straight to the picture.</p></article>
+      <article><b class="num">14</b><h3>Letters</h3><p>In phonics order: the name, the sound and the shape under a finger.</p></article>
+      <article><b class="num">sh</b><h3>Letter teams</h3><p>Two letters, one sound: sh, ee, oy and more on level 2.</p></article>
+      <article><b class="num"><span class="ico" data-icon="speaker"></span></b><h3>Listening</h3><p>A word is heard dozens of times: in the lesson, in the game and in the album.</p></article>
+    </div>
+  </div>
+</section>
+
+<!-- 6.7 For parents -->
+<section class="sec" id="parents">
+  <div class="wrap">
+    <h2>Made to be left alone with</h2>
+    <p class="sub">What a parent wants to know before handing over the tablet.</p>
+    <ul class="trust">
+      <li><span class="badge c1"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.500-1-8-4-8-9V6z"/><path d="M8.500 12l2.500 2.500 4.500-5" class="ln"/></svg></span>
+        <h3>No ads, no buying for kids</h3><p>Only a grown-up pays, behind a parent lock.</p></li>
+      <li><span class="badge c2"><svg viewBox="0 0 24 24"><rect x="5" y="10.500" width="14" height="10" rx="3"/><path d="M8.500 10.500V8a3.500 3.500 0 0 1 7 0v2.500" class="ln dark"/></svg></span>
+        <h3>We collect no child data</h3><p>Only the parent has an account. The child's name never leaves the device.</p></li>
+      <li><span class="badge c3"><svg viewBox="0 0 24 24"><path d="M12 20.500C5 15.500 3 12.500 3 9.500a4.500 4.500 0 0 1 9-1 4.500 4.500 0 0 1 9 1c0 3-2 6-9 11z"/></svg></span>
+        <h3>There is no way to fail</h3><p>Mistakes take nothing away. The lesson always reaches the end.</p></li>
+      <li><span class="badge c4"><svg viewBox="0 0 24 24"><path d="M4 9.500a11.500 11.500 0 0 1 16 0M7 13a7 7 0 0 1 10 0" class="ln dark"/><circle cx="12" cy="17.500" r="2"/></svg></span>
+        <h3>Works without internet</h3><p>Everything is inside the app: planes, cars and grandma's house.</p></li>
+      <li><span class="badge c5"><svg viewBox="0 0 24 24"><circle cx="12" cy="12.500" r="8.500"/><path d="M12 8v5l3 2" class="ln"/></svg></span>
+        <h3>A daily time limit</h3><p>15, 20 or 30 minutes. When time is up, the stickers go to sleep.</p></li>
+      <li><span class="badge c6"><svg viewBox="0 0 24 24"><path d="M4 6.500a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3h-5l-5 4v-4a3 3 0 0 1-3-3z"/></svg></span>
+        <h3>Instructions in your language</h3><p>English, Russian or Ukrainian. Up to 4 children in one account.</p></li>
+    </ul>
+  </div>
+</section>
+
+<!-- 6.9 FAQ -->
+<section class="sec tint-mint" id="faq">
+  <div class="wrap narrow">
+    <h2>Questions parents ask</h2>
+    <div class="faq">
+      <details><summary>What age is it for?</summary><p>It is built around a five-year-old and works well from 4 to 6.</p></details>
+      <details><summary>Does my child need to read?</summary><p>No. There is no text to read in the game: every instruction is spoken and every button is a picture.</p></details>
+      <details><summary>Which devices does it work on?</summary><p>Tablets and phones, held sideways. Today it plays in the browser; Android and iPhone apps are on the way.</p></details>
+      <details><summary>Does it need the internet?</summary><p>The app works fully offline. The browser version needs a connection the first time it loads.</p></details>
+      <details><summary>What does it cost?</summary><p>The first theme is free for good: 5 lessons, 12 stickers and the Farm album. The other themes will open with a subscription that a parent buys inside the app. Prices will be published at launch.</p></details>
+      <details><summary>Are there ads?</summary><p>No ads, no links out and nothing to buy on the child's side of the app.</p></details>
+      <details><summary>What do you know about my child?</summary><p>Nothing personal. A parent account is optional and only carries progress to another device. The child's name stays on the device.</p></details>
+      <details><summary>Can I limit screen time?</summary><p>Yes. In the parents' area you can set 15, 20 or 30 minutes a day.</p></details>
+      <details><summary>How long should a child play?</summary><p>A good session is 8–15 minutes: two or three lessons and some time with the album.</p></details>
+      <details><summary>Can two children share one tablet?</summary><p>Yes, up to 4 children, each with their own coins, stickers and albums.</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- 6.10 Last screen -->
+<section class="last" id="start">
+  <div class="wrap narrow">
+    <h2>The first album is waiting.</h2>
+    <a class="btn btn-play" href="../web/"><span class="ico" data-icon="play"></span>Play free</a>
+    <form class="notify" id="notify">
+      <label for="email">Tell me when the app is in the stores</label>
+      <div class="field">
+        <input id="email" type="email" required placeholder="parent@example.com" autocomplete="email">
+        <button class="btn btn-yellow" type="submit">Notify me</button>
+      </div>
+      <p class="fine" id="notifyMsg">One e-mail on launch day. No newsletters.</p>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-in">
+    <a class="logo" href="#hero"><img src="../web/icon.png" alt="" width="32" height="32"><span>Stick &amp; Speak</span></a>
+    <nav aria-label="Legal"><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Support</a></nav>
+    <p>© 2026 Stick &amp; Speak</p>
+  </div>
+</footer>
+
+<div class="word" id="word" aria-live="polite"></div>
+<script type="module" src="site.js"></script>
+</body>
+</html>
