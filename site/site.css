@@ -371,3 +371,20 @@ h3 { font-size: 21px; line-height: 1.25; font-weight: 800; }
 
 /* a round separator between the two words of a heading */
 h2 .sep { display: inline-block; width: .32em; height: .32em; margin: 0 .42em; border-radius: 50%; background: #ffb66c; vertical-align: .22em; }
+
+/* 6.8 Pricing: the free plan and the three ways to pay; the year is the one to look at first */
+.prices { list-style: none; padding: 0; margin: 40px 0 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; align-items: stretch; }
+.prices li { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; background: #fff; border-radius: var(--r); padding: 30px 18px 24px;
+  box-shadow: 0 6px 0 #e4d9bf, 0 14px 24px #6b55301a; }
+.prices h3 { font-size: 22px; font-weight: 800; color: var(--muted); }
+.prices b { margin-top: 6px; font-size: clamp(34px, 4vw, 44px); font-weight: 900; line-height: 1.1; white-space: nowrap; }
+.prices span { color: var(--muted); font-size: 16px; font-weight: 700; }
+.prices p { margin-top: 14px; font-size: 17px; color: var(--ink); }
+.prices .best { background: linear-gradient(160deg, #e9f8f3, #bfe8e1); box-shadow: 0 6px 0 var(--stick-edge), 0 14px 24px #24595c22; }
+.prices .best h3, .prices .best span { color: var(--stick-ink); }
+.prices em { position: absolute; top: -14px; padding: 4px 14px; border-radius: 14px; background: var(--stick-ink); color: #fff; font-style: normal; font-size: 14px; font-weight: 800; white-space: nowrap; }
+.prices-note { margin: 26px auto 0; max-width: 46em; text-align: center; color: var(--muted); font-weight: 700; }
+.prices-note + .prices-note { margin-top: 12px; }
+.prices-note a { color: var(--play-ink); }
+@media (max-width: 900px) { .prices { grid-template-columns: repeat(2, 1fr); gap: 26px 16px; } }
+@media (max-width: 480px) { .prices { grid-template-columns: 1fr; } }

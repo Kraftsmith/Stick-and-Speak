@@ -34,6 +34,7 @@ Any static server works (ES modules need http://, not file://). The VS Code laun
 | `js/lessons.js` | Builds a lesson, runs its tasks, the reward screen; task modules register with `onTask` |
 | `js/quiz.js`, `js/trace.js`, `js/puzzle.js`, `js/pairs.js`, `js/lines.js`, `js/race.js` | The task types |
 | `js/path.js`, `js/album.js`, `js/collection.js`, `js/parent.js` | The other screens |
+| `js/premium.js`, `js/paywall.js` | Premium (`Specs/features/subscription.md`): the border of the free plan and its locks, what the server says about the account, promo codes; the "Unlock all" tab of the parent zone and the promo code of the first run |
 | `js/voicelist.js` | Parent zone → Testing → Voices: every spoken line (ru, en), its clip or the device voice, buttons to hear both, marks for lines that sound wrong |
 | `sw.js` | Service worker: the app, artwork, music and voice clips work offline in the browser |
 | `manifest.json`, `icon.png` | Install to the home screen: full screen, landscape |

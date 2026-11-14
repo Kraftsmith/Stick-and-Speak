@@ -49,3 +49,7 @@
 .kidrow .kmid small { font-size: 18px; color: #8a867c; }
 .kidrow .frlangs button { min-height: 50px; font-size: 20px; border-radius: 16px; }
 .kidstep .fract { margin-top: 18px; }
+/* "I have a promo code" on the first run (features/subscription.md 5) */
+.fracc.frpromo { margin-top: 4px; }
+.signin.promo #prCode { text-transform: uppercase; letter-spacing: 2px; }
+.signin .sinote.good { color: #466c67; font-weight: 800; font-size: 28px; }

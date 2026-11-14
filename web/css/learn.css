@@ -45,3 +45,6 @@
 .ttag::after { content: ""; position: absolute; bottom: -10px; left: calc(50% - 8px); width: 16px; height: 16px; background: #fffdf4; rotate: 45deg; border-right: 2px solid #eee0c4; border-bottom: 2px solid #eee0c4; }
 .ttag small { font-size: 21px; color: #77634e; margin-top: 8px; }
 .ln .mk { width: 46px; height: 46px; display: grid; place-items: center; background: #fff4cc; border-radius: 50%; font-size: 32px; box-shadow: 0 3px 0 #dfc887; }
+/* the next lesson past the free plan (features/subscription.md 3): it waits for a grown-up, no price and no "buy" here */
+.ln.pay { background: linear-gradient(#f3ecdc, #e2d6bd); color: #79786f; box-shadow: 0 8px 0 #c3b596, 0 0 0 9px #e9dcbc66; z-index: 2; }
+.ln.pay > :not(.mk) { filter: grayscale(.7); opacity: .75; }

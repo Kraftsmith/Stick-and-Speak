@@ -16,11 +16,15 @@ import { voicesHtml, bindVoices } from './voicelist.js';
 import { Cloud } from './cloud.js';
 import { mountAccount } from './account.js';
 import { saveBackupFile, readBackup, restoreBackup } from './backup.js';
+import { Premium, FREE } from './premium.js';
+import { mountPremium, premiumText } from './paywall.js';
 
 /* ================= parent ================= */
 let code = [], entered = [], parentTab = 'settings';
 let fileNote = null;   // the line under the backup buttons: { text, bad }
 let avEdit = null, adding = null, showBoot = false, showVoices = false, cloudDoc = null;   // the Children block: whose picture is being chosen, the new child's form
+// a lock on the child's side (a lesson or a sticker outside the free plan) leads here: the parent code, then the tab
+export function openParent(tab) { parentTab = tab; go('parent'); }
 // sleep screen: a grown-up enters the code and the child gets 15 more minutes today
 $('keepon').onclick = () => { sfx.pop(); U.parentThen = 'extend'; go('parent'); };
 const NAMES = ['zero','one','two','three','four','five','six','seven','eight','nine'];
@@ -65,7 +69,9 @@ function kidsHtml() {
         ${pics(adding.avatar, 'data-apick')}
         <span class="pkrow"><button class="on" id="akadd">Add</button><button id="akcancel">Cancel</button></span>
       </div>`
-      : kids.length < MAX_PROFILES ? '<button id="kadd">+ Add a child</button>' : `<span class="pnote">${MAX_PROFILES} children at most</span>`}
+      : kids.length >= MAX_PROFILES ? `<span class="pnote">${MAX_PROFILES} children at most</span>`
+      : Premium.canAddProfile(kids.length) ? '<button id="kadd">+ Add a child</button>'
+      : `<span class="pnote">The free plan is for one child. Premium opens up to ${MAX_PROFILES}.</span><button id="kprem">${premiumText(S.lang).tab}</button>`}
     ${many ? `<div class="pkrow pkask">Who plays at the start: ${[['kids', 'Children choose'], ['parent', 'Ask for the parent code'], ['never', 'Do not ask']]
         .map(([k, l]) => `<button data-ask="${k}" class="${ask === k ? 'on' : ''}">${l}</button>`).join('')}
         <span class="pnote">The “Who’s playing?” screen is shown every time the app starts. “Do not ask” opens the child who played last.</span></div>` : ''}
@@ -93,6 +99,7 @@ function kidsWire(p) {
     if (wasPlaying) { useProfile(Profiles.current()); renderHello(); renderCoins(); renderMute(); }
     avEdit = null; showStats();
   });
+  if ($('kprem')) $('kprem').onclick = () => { parentTab = 'premium'; showStats(); };
   if ($('kadd')) $('kadd').onclick = () => { adding = { kidName: '', lang: S.lang || deviceLang(), parentWho: S.parentWho || '', avatar: freeAvatar() }; showStats(); };
   if (adding) {
     $('akname').oninput = e => { adding.kidName = e.target.value.trim(); };
@@ -177,10 +184,15 @@ function showStats() {
   const mins = Math.round(S.usedMs / 60000);
   const where = tr => { const i = nextIdx(tr), n = TRACKS[tr].lessons.length;
     return `${doneCount(tr)} of ${n}` + (i < n ? ` · now: ${TRACKS[tr].islands.find(is => is.idx.includes(i)).label}` : ' · all done'); };
-  const TABS = [['settings', 'Settings'], ['progress', 'Progress'], ['testing', 'Testing']];
+  // "Unlock all" is there once the free plan has its locks (premium.js), and for a family that already has premium
+  const prem = Premium.limitsOn() || Premium.state().kind !== 'free';
+  if (parentTab === 'premium' && !prem) parentTab = 'settings';
+  const TABS = [['settings', 'Settings'], ...(prem ? [['premium', premiumText(S.lang).tab]] : []), ['progress', 'Progress'], ['testing', 'Testing']];
   const tabs = `<div class="ptabs">${TABS.map(([k, l]) => `<button data-pt="${k}" class="${parentTab === k ? 'on' : ''}">${l}</button>`).join('')}</div>`;
   const PROGRESS = `<table>
-    <tr><td>Lessons</td><td>${where('main')}</td></tr>
+    <tr><td>Level 1: words</td><td>${where('main')}</td></tr>
+    <tr><td>Level 2: letters</td><td>${where('abc')}</td></tr>
+    <tr><td>Level 3: letter teams</td><td>${where('lvl2')}</td></tr>
     <tr><td>Correct answers</td><td>${acc}%</td></tr>
     <tr><td>English words (${words.length} of ${WORDS.length})</td><td style="font-weight:400;font-size:22px">${words.slice(-12).join(', ') || '—'}</td></tr>
     <tr><td>Letters (${letters.length} of ${LETTERS.length})</td><td>${letters.join(' ') || '—'}</td></tr>
@@ -195,7 +207,7 @@ function showStats() {
   const TESTING = `<div class="ptime">For testing:
     <button id="gift">+100 coins</button>
     <button id="skip">+1 lesson</button>
-    <button id="lv2">${S.lvl2open ? 'Level 2 open' : 'Open level 2'}</button>
+    <button id="lv2">${S.lvl2open ? 'All levels open' : 'Open all levels'}</button>
     <button id="tryrace">Race</button>
     <button id="tlines1">Lines ★</button><button id="tlines2">Lines ★★</button><button id="tlines3">Lines ★★★</button><button id="tlines4">Lines sh·ch</button><button id="tlines5">Lines ai·oa</button><button id="tlines6">Lines in order</button>
     <button id="tup">Time is up</button>
@@ -204,6 +216,10 @@ function showStats() {
     <button id="tboot" class="${showBoot ? 'on' : ''}">Boot log</button>
     <button id="tvoices" class="${showVoices ? 'on' : ''}">Voices</button>
     <button id="reset">Reset everything</button></div>
+  <div class="ptime">Free plan locks:
+    ${[['', Premium.PAYWALL ? 'as released (on)' : 'as released (off)'], ['on', 'on'], ['free', 'on, as free'], ['premium', 'on, as premium']]
+      .map(([k, l]) => `<button data-pay="${k}" class="${Premium.mode() === k ? 'on' : ''}">${l}</button>`).join('')}
+    <span class="pnote">now: ${Premium.limitsOn() ? 'locks on' : 'locks off'} · ${Premium.state().kind} · lessons done ${Premium.lessonsDone()} of ${FREE.lessons} free</span></div>
   <div class="ptime">Cloud:
     <button id="csync">Sync now</button>
     <button id="cdoc" class="${cloudDoc ? 'on' : ''}">Show cloud doc</button>
@@ -223,10 +239,12 @@ function showStats() {
       «Покажи …» <input type="text" id="pdat" maxlength="16" placeholder="тёте" value="${esc(S.parentDat || '')}"><button id="plisten">Listen</button></div>` : ''}
   <div class="ptime">Voice: <span id="vstat">…</span> <button id="vtest">Test</button>${NTTS ? ' <button id="vinst">Install voices</button>' : ''}</div>
   <div class="ptime">Daily limit: ${[15,20,30,0].map(m => `<button data-m="${m}" class="${S.limit === m ? 'on' : ''}">${m ? m + ' min' : 'no limit'}</button>`).join('')}</div>`;
-  p.innerHTML = tabs + (parentTab === 'progress' ? PROGRESS : parentTab === 'testing' ? TESTING : SETTINGS);
+  p.innerHTML = tabs + (parentTab === 'progress' ? PROGRESS : parentTab === 'testing' ? TESTING : parentTab === 'premium' ? '<div id="ppremium"></div>' : SETTINGS);
   p.querySelectorAll('[data-pt]').forEach(b => b.onclick = () => { parentTab = b.dataset.pt; showStats(); });
   p.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { S.limit = +b.dataset.m; save(); showStats(); });
+  if (parentTab === 'premium') mountPremium($('ppremium'), { lang: S.lang, toSettings: () => { parentTab = 'settings'; showStats(); } });
   if (parentTab === 'testing') {
+    p.querySelectorAll('[data-pay]').forEach(b => b.onclick = () => { Premium.setMode(b.dataset.pay); showStats(); });
     $('gift').onclick = () => { S.coins += 100; save(); renderCoins(); showStats(); };
     $('skip').onclick = () => { Object.keys(TRACKS).forEach(tr => { const i = nextIdx(tr); if (i < TRACKS[tr].lessons.length) S.prog[tr][i] = 'ok'; }); save(); showStats(); };
     $('tup').onclick = () => { if (!S.limit) S.limit = 15; S.usedMs = S.limit * 60000; save(); go('album'); };
@@ -236,7 +254,7 @@ function showStats() {
     $('tryrace').onclick = () => startAt('main', gameAt('main', 0, 'race'), 'race');
     // the first lines of theme 1, 3 and 6: level 1, 2 and 3
     [[1, 0], [2, 2], [3, 5]].forEach(([n, t]) => { $('tlines' + n).onclick = () => startAt('main', gameAt('main', t, 'lines'), 'lines'); });
-    // level 2: group 1 and 4, a letter team on one ball; level 3 (not on a path yet): letters in order
+    // letter teams (level 3): group 1 and 4, a team on one ball; reading (not on a path yet): letters in order
     $('tlines4').onclick = () => startAt('lvl2', gameAt('lvl2', 0, 'lines'), 'lines');
     $('tlines5').onclick = () => startAt('lvl2', gameAt('lvl2', 3, 'lines'), 'lines');
     $('tlines6').onclick = () => startAt('main', gameAt('main', 5, 'lines'), 'lines', { order: true });

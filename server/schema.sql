@@ -41,3 +41,13 @@ create table if not exists promo_redemptions (
   redeemed_at timestamptz default now(),
   primary key (code, account_id)                         -- one code, once per account
 );
+
+-- Premium given by this server: a promo code turned into a right until a date (Specs/features/subscription.md 6).
+-- A subscription bought in a store is not here: the app learns about it from the store's SDK.
+create table if not exists premium_grants (
+  account_id  text primary key references "user"(id) on delete cascade,
+  until       timestamptz,                               -- null = for ever (a code of the kind 'friends')
+  source      text not null default 'promo',
+  code        text,                                      -- the code that gave or extended it last
+  granted_at  timestamptz not null default now()
+);

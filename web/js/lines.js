@@ -14,7 +14,9 @@ import { confetti, addCoins } from './ui.js';
 import { go, onLeave } from './nav.js';
 import { L, later, nextTask, dotsHtml, onTask } from './lessons.js';
 
-const AREA = { x: 370, y: 130, w: 840, h: 580 };   // where the board may be, in frame pixels
+// The board is as large as the height between the top bar and the dots allows (and never wider than AREA.w); the word
+// cards stand right beside it and the two are centred together, so a wide phone has no empty band between them.
+const AREA = { y: 120, w: 840, h: 590 }, CARDS_W = 210, CARDS_GAP = 46, FRAME_W = 1280;   // frame pixels
 const SAY_GO = 'Собери шарики одного цвета в ряд!', SAY_ORDER = 'Поставь шарики по порядку, чтобы получилось слово!';
 const HOP_MS = 400, IDLE_MS = 15000, TUT_IDLE_MS = 8000;
 
@@ -158,7 +160,8 @@ function startLines(task) {
   if (U.current !== 'lines') return;
   const lv = Math.min(task.level, LINES_LEVELS.length), V = LINES_LEVELS[lv - 1];
   const words = pickWords(task, V.words, V.maxLen);
-  const cell = Math.min(130, Math.floor(AREA.w / V.cols), Math.floor(AREA.h / V.rows));
+  const cell = Math.min(Math.floor(AREA.w / V.cols), Math.floor(AREA.h / V.rows));
+  const x0 = Math.round((FRAME_W - (CARDS_W + CARDS_GAP + cell * V.cols)) / 2);   // the left edge of the cards
   G = { level: lv, cols: V.cols, rows: V.rows, cell, letters: V.letters || task.ci != null || !!task.order, ci: task.ci, order: !!task.order,
         lower: task.ci != null || !!task.order, start: V.start, spawnN: V.spawn, hintAfter: V.hint,
         at: Array(V.cols * V.rows).fill(null), queue: words.slice(), colours: shuffle(LINE_COLORS), active: [], buf: [],
@@ -170,7 +173,8 @@ function startLines(task) {
   const g = $('lgrid');
   g.innerHTML = '';
   Object.assign(g.style, { width: cell * V.cols + 'px', height: cell * V.rows + 'px',
-    left: AREA.x + (AREA.w - cell * V.cols) / 2 + 'px', top: AREA.y + (AREA.h - cell * V.rows) / 2 + 'px' });
+    left: x0 + CARDS_W + CARDS_GAP + 'px', top: AREA.y + (AREA.h - cell * V.rows) / 2 + 'px' });
+  $('lcards').style.left = x0 + 'px';
   g.style.setProperty('--cell', cell + 'px');
   for (let k = 0; k < V.cols * V.rows; k++) { const c = document.createElement('div'); c.className = 'lcell'; const [x, y] = xy(k); c.style.transform = T(x, y); g.appendChild(c); }
   // the first words are on the board from the start (on level 1 all of them; nothing falls there)

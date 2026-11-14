@@ -13,8 +13,10 @@
 | `api/config.js` | `GET /api/config` — какие способы входа включены |
 | `api/profiles/index.js`, `api/profiles/[id].js` | Профили: список, запись с проверкой версии, удаление |
 | `api/account/delete.js` | Удаление аккаунта |
+| `api/premium.js`, `api/redeem.js` | Премиум, выданный сервером, и промокод ([subscription.md](../Specs/features/subscription.md) 5, 6) |
 | `server/auth.sql` | Таблицы входа Better Auth (сгенерированы его CLI) |
-| `server/schema.sql` | Таблицы приложения: `profiles`, `promo_codes`, `promo_redemptions` |
+| `server/schema.sql` | Таблицы приложения: `profiles`, `promo_codes`, `promo_redemptions`, `premium_grants` |
+| `server/promo.mjs` | Промокоды: создать, посмотреть, закрыть (`list`, `add`, `off`) |
 | `server/apply.mjs` | Применяет обе схемы к базе |
 | `server/dev.mjs` | Локальный сервер: сайт, игра и те же функции |
 | `package.json`, `vercel.json` (корень) | Зависимости сервера; регион `fra1`, сборка, rewrite для входа |
@@ -90,4 +92,4 @@ curl -i https://stickandplay.kids/api/profiles   # 401 без входа
 2. **Google и Apple.** Создать OAuth-клиенты и положить ключи в переменные окружения. Адреса возврата: `https://stickandplay.kids/api/auth/callback/google` и `…/callback/apple`.
 3. **Вход Google и Apple в нативных приложениях** (TASKS 2.6б): Capacitor-плагин и `id_token`. Не начато; пока в приложениях доступен только код из письма.
 4. **Ветка `dev` в Neon** — см. выше.
-5. **`POST /api/redeem`** и RevenueCat в удалении аккаунта — вместе с подпиской (TASKS, раздел 3).
+5. **RevenueCat**: покупки в магазинах и вызов «delete subscriber» при удалении аккаунта (TASKS 3.1, 3.2, 3.12). Промокод (`POST /api/redeem`) сделан 2026-11-14 и от RevenueCat не зависит.

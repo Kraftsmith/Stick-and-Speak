@@ -15,6 +15,8 @@ import { renderHello, renderCoins, renderCollN, overlay, closeOverlay, addCoins 
 import { go, onEnter } from './nav.js';
 import { Cloud } from './cloud.js';
 import { mountSignIn, mountKids } from './account.js';
+import { Premium, promoAllowed } from './premium.js';
+import { mountPromoStart, premiumText } from './paywall.js';
 
 /* ================= the launch screen ================= */
 // #splash is the first thing in the markup and is drawn before any script runs; here it only goes away.
@@ -102,7 +104,7 @@ Cloud.providers().then(w => { frWays = w.length > 0; if (U.current === 'firstrun
 function frShow() {
   $('frForm').style.display = frStep === 'kids' ? 'none' : '';
   $('frAct').style.display = frStep === 'form' ? '' : 'none';
-  $('frSign').style.display = frStep === 'signin' ? '' : 'none';
+  $('frSign').style.display = frStep === 'signin' || frStep === 'promo' ? '' : 'none';
   $('frKids').style.display = frStep === 'kids' ? '' : 'none';
 }
 // after the names: one child goes home, several are asked who plays
@@ -116,6 +118,12 @@ function renderFirstRun() {
   $('frLangs').querySelectorAll('button').forEach(b => b.onclick = () => { frLang = b.dataset.l; renderFirstRun(); });
   // signed in with an empty cloud: the line has done its work, the child made here becomes the account's first
   $('frAcc').textContent = t.account; $('frAcc').style.display = Cloud.account() || !frWays ? 'none' : '';
+  // "I have a promo code" (subscription.md 5): on Android and on the site, where the free plan has its locks and the
+  // server offers a way to sign in; gone once the family has premium
+  $('frPromo').textContent = premiumText(frLang).line;
+  $('frPromo').style.display = promoAllowed && Premium.limitsOn() && frWays && Premium.state().kind !== 'premium' ? '' : 'none';
+  const joined = r => { if (r && r.kids && r.kids.length) showKids(r.kids); else { frStep = 'form'; renderFirstRun(); } };
+  if (frStep === 'promo') mountPromoStart($('frSign'), { lang: frLang, onBack: () => { frStep = 'form'; renderFirstRun(); }, onDone: joined });
   if (frStep === 'signin') mountSignIn($('frSign'), { lang: frLang, firstRun: true,
     onBack: () => { frStep = 'form'; renderFirstRun(); },
     onDone: r => { if (r.kids && r.kids.length) showKids(r.kids); else { frStep = 'form'; renderFirstRun(); } } });
@@ -130,6 +138,7 @@ $('frStart').onclick = () => firstRunDone(true);
 $('frSkip').onclick = () => firstRunDone(false);
 $('frName').onkeydown = ev => { if (ev.key === 'Enter') firstRunDone(true); };
 $('frAcc').onclick = () => { frStep = 'signin'; renderFirstRun(); };
+$('frPromo').onclick = () => { frStep = 'promo'; renderFirstRun(); };
 onEnter('firstrun', renderFirstRun);
 
 /* ================= who's playing? ================= */

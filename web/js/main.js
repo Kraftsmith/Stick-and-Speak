@@ -14,10 +14,12 @@ import { registerOffline, fullscreenOnFirstTouch } from './platform.js';
 import { VERSION } from './version.js';
 import { boot } from './startup.js';
 import { Cloud } from './cloud.js';
+import { Premium } from './premium.js';
 
 /* ================= start ================= */
 $('note').textContent = 'Stick & Play · ' + VERSION;
 registerOffline();
 fullscreenOnFirstTouch();
 Cloud.init();
+Premium.init();
 boot();

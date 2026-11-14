@@ -3,11 +3,13 @@ import { $ } from './stage.js';
 import { U } from './session.js';
 import { S, save, isDone, wordsOf, learnedWords, learnedLetters, learnedChunks } from './state.js';
 import { TRACKS, THEMES, LETTERS, CHUNKS, CHUNK_WORD, WORD_INFO, SETS, STICKERS, ECON, pic, picOf, markWord, sndOf } from './data.js';
+const letterWords = lis => lis.flatMap(li => LETTERS[li][1].map(x => x[0]));
 import { I, ICON_NEXT } from './icons.js';
 import { one, shuffle } from './util.js';
 import { say, en, cheer, sfx } from './audio.js';
 import { overlay, closeOverlay, addCoins, confetti } from './ui.js';
 import { go } from './nav.js';
+import { lessonLocked, stickerLocked } from './premium.js';
 
 /* ================= intro cards ================= */
 export function showIntro(cards, done) {
@@ -39,7 +41,7 @@ export function letterPool(li) {
 }
 export function letterIntro(li) {
   const [ch, ws] = LETTERS[li];
-  return { html: `<div class="letterbig">${ch}${ch.toLowerCase()}</div>
+  return { html: `<div class="letterbig">${ch}</div>
       <div class="lpics">${ws.map(([w, e]) => `<div>${picOf(w, e)}<small><b>${w[0]}</b>${w.slice(1)}</small></div>`).join('')}</div>`,
     speak: () => say(en(ch + '.'), en(`${ch} is for ${ws.map(w => w[0]).join(', and ')}.`)) };
 }
@@ -57,12 +59,18 @@ export const chunkWordsFirst = cis => [...learnedChunks().filter(c => !cis.inclu
 export function buildLesson(tr, idx) {
   const ls = TRACKS[tr].lessons[idx];
   let intro = [], tasks = [];
-  // every lesson mixes task types: pictures, letters, drag-and-drop; a words lesson ends with a puzzle.
+  // every lesson mixes task types: pictures, tracing, drag-and-drop; a words lesson ends with a puzzle.
   // Pairs, lines and the race are circles of their own on the path, right after the lesson they belong to.
   if (ls.kind === 'game') {
     const of = ls.of, level = ls.level;
     if (of.kind === 'words') tasks = [{ t: 'pairs', words: shuffle(wordsOf(of)), more: themeWordsFirst(of.theme), level }];
-    else if (of.kind === 'letter') tasks = [{ t: 'lines', li: of.li, theme: of.theme, level }];   // balls that make words (Specs/features/Lines.md)
+    // balls that make words (Specs/features/Lines.md): the theme's words on level 1, the letter's example words on level 2
+    else if (of.kind === 'shape') tasks = [{ t: 'lines', theme: of.theme, level }];
+    else if (of.kind === 'letter') tasks = [{ t: 'lines', li: of.li, level }];
+    else if (of.kind === 'letters') {
+      // level 2 review: the race on the example words of the group's two letters, then of the letters learned before
+      tasks = [{ t: 'race', words: shuffle(letterWords(of.lis)), more: [...letterWords(learnedLetters()), ...learnedWords()], far: [], level }];
+    }
     else if (of.kind === 'review') {
       // wrong pictures on the easy level come from other themes
       const ws = shuffle(THEMES[of.theme].map(x => x[0]));
@@ -78,11 +86,22 @@ export function buildLesson(tr, idx) {
     intro = wordsOf(ls).map(w => ({ html: `<div class="pic">${pic(WORD_INFO[w])}</div><div class="word">${w}</div>`, speak: () => say(en(w)) }));
     tasks = [{ t: 'pick', w: ws[0] }, { t: 'pick', w: ws[1] }, { t: 'pair', w: ws[2] }, { t: 'pick', w: ws[3] },
              { t: 'puzzle', w: one(ws), level: ls.level }];
+  } else if (ls.kind === 'shape') {
+    // level 1, between the word lessons: the theme's shape to trace, then the words learned so far in this theme.
+    // The second time the shape is smaller and comes twice.
+    const ws = shuffle(ls.part ? THEMES[ls.theme].map(x => x[0]) : wordsOf(ls));
+    tasks = [{ t: 'trace', shape: ls.ti, small: !!ls.part }, { t: 'pick', w: ws[0] }, { t: 'odd', theme: ls.theme }, { t: 'pair', w: ws[1] }, { t: 'pick', w: ws[2] }];
+    if (ls.part) tasks.splice(3, 0, { t: 'trace', shape: ls.ti, small: true });
   } else if (ls.kind === 'letter') {
+    // level 2: one capital letter per lesson
     intro = [letterIntro(ls.li)];
-    tasks = [{ t: 'trace', li: ls.li }, { t: 'find', li: ls.li }, { t: 'first', li: ls.li },
-             { t: 'trace', li: ls.li, low: true }, { t: 'first', li: ls.li }];
+    tasks = [{ t: 'trace', li: ls.li }, { t: 'find', li: ls.li }, { t: 'first', li: ls.li }, { t: 'first', li: ls.li }];
     const r = reviewWord([]); if (r) tasks.splice(3, 0, { t: 'pick', w: r });
+  } else if (ls.kind === 'letters') {
+    // level 2 review: both letters of the group and one learned before
+    const [a, b] = shuffle(ls.lis), old = learnedLetters().filter(li => !ls.lis.includes(li));
+    tasks = [{ t: 'find', li: a }, { t: 'first', li: b }, { t: 'trace', li: a }, { t: 'first', li: old.length ? one(old) : a }];
+    const r = reviewWord([]); if (r) tasks.push({ t: 'pick', w: r });
   } else if (ls.kind === 'chunk') {
     // level 2: one letter team per lesson; tracing grows from two letters to a whole word
     const [w1, w2] = shuffle(CHUNKS[ls.ci][2].map(x => x[0]));
@@ -95,17 +114,16 @@ export function buildLesson(tr, idx) {
     tasks = [{ t: 'chunk', ci: a }, { t: 'missing', w: wb[0] }, { t: 'trace', text: wa[0], ci: a },
              { t: 'chunk', ci: old.length ? one(old) : b }];
   } else {
+    // level 1 review: the theme's eight words and its shape
     const ws = shuffle(THEMES[ls.theme].map(x => x[0]));
-    const [a, b] = shuffle(ls.letters);
-    tasks = [{ t: 'pick', w: ws[0] }, { t: 'trace', li: a }, { t: 'odd', theme: ls.theme },
-             { t: 'pairs', words: ws, more: learnedWords(), level: ls.level },
-             { t: 'first', li: b }];
+    tasks = [{ t: 'pick', w: ws[0] }, { t: 'odd', theme: ls.theme }, { t: 'trace', shape: ls.ti }, { t: 'pair', w: ws[1] }, { t: 'pick', w: ws[2] }];
   }
   return { tr, idx, ls, intro, tasks, i: 0, earned: 0, misses: 0 };
 }
 export let L = null;   // the running lesson: tasks, the U.current task index, coins earned, mistakes
 export function startLesson(tr, idx) {
-  if (idx >= TRACKS[tr].lessons.length) { U.pathTr = tr; go('path'); return; }
+  // past the last lesson, or past the free plan (subscription.md 3): the path, where the lock is
+  if (idx >= TRACKS[tr].lessons.length || lessonLocked(tr, idx)) { U.pathTr = tr; go('path'); return; }
   U.pathTr = tr; S.lastTrack = tr; save();
   L = buildLesson(tr, idx); U.streak = 0;
   if (L.intro.length) showIntro(L.intro, runTask); else runTask();
@@ -134,7 +152,7 @@ export const dotsHtml = () => L.tasks.map((_, i) => `<div class="dot ${i < L.i ?
 // the album Stick leads to after a lesson (features/stick.md 3): the album of the lesson's theme, else (a level 2 lesson,
 // or nothing there the coins are enough for) the album opened last, else any album with a sticker the coins can buy
 const STICKERS_OF = id => SETS.find(s => s.id === id).items.map(([, w]) => STICKERS[id + ':' + w]);
-const affordableIn = id => STICKERS_OF(id).some(st => st.price <= S.coins);
+const affordableIn = id => !stickerLocked(id) && STICKERS_OF(id).some(st => st.price <= S.coins);
 function rewardAlbum(theme) {
   const tries = [theme, S.lastScene, ...SETS.map(s => s.id)].filter(id => SETS.some(s => s.id === id));
   return tries.find(affordableIn) || tries[0] || SETS[0].id;
@@ -152,7 +170,7 @@ export function endLesson() {
   const me = L;
   setTimeout(() => {
     if (L !== me) return;
-    const canBuy = S.coins >= CHEAPEST, hasNext = L.idx + 1 < TRACKS[L.tr].lessons.length;
+    const canBuy = S.coins >= CHEAPEST && SETS.some(s => affordableIn(s.id)), hasNext = L.idx + 1 < TRACKS[L.tr].lessons.length;
     overlay(`<div class="bigpic">${gold ? I.gold : I.star}</div><div class="gain">+${L.earned} ${I.coin}</div>
       ${canBuy ? '<div class="hintbuy">You can buy a sticker! ➜</div>' : ''}
       <div class="row endrow">

@@ -196,3 +196,7 @@
 .shand { position: absolute; z-index: 96; font-size: 90px; pointer-events: none; transform: translate(-30%, -20%); animation: shand 2.4s ease-in-out 2; }
 @keyframes shand { 0% { translate: 0 0; opacity: 0; } 12% { opacity: 1; } 70% { translate: var(--dx) var(--dy); opacity: 1; } 90%,100% { translate: var(--dx) var(--dy); opacity: 0; } }
 #album.sleep .shelf .tk { animation: none; }
+/* a sticker of an album outside the free plan (features/stick.md 7): a lock where the coin button would be */
+.buybtn.paylock { background: linear-gradient(#f5f1e6, #ddd6c6); box-shadow: 0 7px 0 #b9b09c; }
+.buybtn.paylock:active { box-shadow: 0 2px 0 #b9b09c; }
+.buybtn.paylock .ic { font-size: 64px; }

@@ -1,5 +1,5 @@
 // The running game of the playing profile and everything derived from it: progress, what is open, the daily limit.
-import { STICKERS, SETS, ECON, TRACKS, THEMES, THEME_ORDER, LETTERS, CHUNKS, PRAISE, pic } from './data.js';
+import { STICKERS, SETS, ECON, TRACKS, LEVELS, THEMES, THEME_ORDER, LETTERS, CHUNKS, PRAISE, pic } from './data.js';
 import { one } from './util.js';
 import { Profiles } from './profiles.js';
 
@@ -45,15 +45,27 @@ export function useProfile(id, played = true) {
   PID = id;
   Object.keys(S).forEach(k => delete S[k]);
   Object.assign(S, fresh(), state, { kidName: local.kidName || '', mute: !!local.mute });
-  S.prog = Object.assign({ main: {}, lvl2: {} }, S.prog);
+  S.prog = Object.assign({ main: {}, abc: {}, lvl2: {} }, S.prog);
   // saves made before pairs, lines and the race became circles of their own (progV 2): the lessons were numbered
   // without them. A lesson done then is done now together with its games, which were played inside it.
-  if (S.progV !== 2) {
+  if (!(S.progV >= 2)) {
     Object.keys(TRACKS).forEach(tr => {
       const old = S.prog[tr]; S.prog[tr] = {};
       Object.keys(old).forEach(k => (TRACKS[tr].before[k] || []).forEach((i, n) => { S.prog[tr][i] = n ? 'ok' : old[k]; }));
     });
     S.progV = 2;
+  }
+  // progV 3: the letters left level 1 for a level of their own (2026-11-13). A letter lesson done on level 1 (the 2nd
+  // and 4th lesson of a theme, now a shape lesson) is done on the letters path too, with its game; a child who was
+  // already on the letter teams keeps that level open.
+  if (S.progV < 3) {
+    TRACKS.abc.lessons.forEach((ls, i) => {
+      if (ls.kind !== 'letter') return;
+      const was = S.prog.main[Math.floor(ls.li / 2) * 10 + (ls.li % 2 ? 6 : 2)];
+      if (was) { S.prog.abc[i] = S.prog.abc[i] || was; S.prog.abc[i + 1] = S.prog.abc[i + 1] || 'ok'; }
+    });
+    if (Object.keys(S.prog.lvl2).length) S.lvl2open = true;
+    S.progV = 3;
   }
   S.stats.err = S.stats.err || {};   // word / letter -> mistakes
   // drop stickers that no longer exist (renamed words), so old saves keep working
@@ -141,9 +153,12 @@ export function nextIdx(tr) { const n = TRACKS[tr].lessons.length; for (let i = 
 export const doneCount = tr => Object.keys(S.prog[tr]).length;
 export const wordsOf = ls => THEMES[ls.theme].slice(ls.part * 4, ls.part * 4 + 4).map(x => x[0]);
 export const learnedWords = () => TRACKS.main.lessons.flatMap((ls, i) => isDone('main', i) && ls.kind === 'words' ? wordsOf(ls) : []);
-export const learnedLetters = () => TRACKS.main.lessons.filter((ls, i) => isDone('main', i) && ls.kind === 'letter').map(ls => ls.li);
-// level 2 opens when level 1 is finished (or the parent opens it)
-export const levelOpen = tr => tr === 'main' || S.lvl2open || nextIdx('main') >= TRACKS.main.lessons.length;
+export const learnedLetters = () => TRACKS.abc.lessons.filter((ls, i) => isDone('abc', i) && ls.kind === 'letter').map(ls => ls.li);
+// a level opens when the one before it is finished (or the parent opens them all)
+export function levelOpen(tr) {
+  const n = LEVELS.findIndex(l => l[0] === tr), before = n > 0 ? LEVELS[n - 1][0] : null;
+  return !before || !!S.lvl2open || nextIdx(before) >= TRACKS[before].lessons.length;
+}
 export const learnedChunks = () => TRACKS.lvl2.lessons.filter((ls, i) => isDone('lvl2', i) && ls.kind === 'chunk').map(ls => ls.ci);
 export function chunkPool(ci) {
   const ids = [...new Set([...learnedChunks(), ci])];

@@ -4,7 +4,9 @@
 //      node app/voice.js --force    (re-render everything, e.g. after changing the voice)
 //      node app/voice.js --force --lang en   (re-render one language only, e.g. after changing its model)
 //      node app/voice.js --list     (only print the lines that have no clip yet and refresh the manifest; no API calls)
-//      node app/voice.js --redo marked.txt   (re-render the lines in the file: "lang<TAB>text" per line, as Testing → Voices →
+//      node app/voice.js --level    (bring every existing clip to one loudness with ffmpeg; no API calls. New clips are
+//                                    levelled as they are rendered)
+//      node app/voice.js --redo marked.txt  (re-render the lines in the file: "lang<TAB>text" per line, as Testing → Voices →
 //                                             Copy marked gives them)
 // The API key is read from ELEVENLABS_API_KEY or from the .env file in ENV_FILE (never stored here).
 const fs = require('fs'), path = require('path'), crypto = require('crypto'), { pathToFileURL } = require('url');
@@ -15,6 +17,7 @@ const GEN = path.join(WEB, 'js', 'gen', 'voice.js');
 const ENV_FILE = process.env.ENV_FILE || 'C:/Users/User/Documents/Projects/EgzaminPolskiB1/.env';
 const FORCE = process.argv.includes('--force');
 const LIST = process.argv.includes('--list');
+const LEVEL = process.argv.includes('--level');
 const ONLY_LANG = process.argv.includes('--lang') ? process.argv[process.argv.indexOf('--lang') + 1] : null;
 const REDO = process.argv.includes('--redo') ? process.argv[process.argv.indexOf('--redo') + 1] : null;
 
@@ -52,13 +55,13 @@ function apiKey() {
 
 // ---- every line the app can say, built from the app's own data module so the word lists never drift.
 // Keep in step with say(...) calls in web/js/*.js.
-function allLines({ SETS, LETTERS, CHUNKS }) {
+function allLines({ SETS, LETTERS, CHUNKS, SHAPES }) {
   const ru = t => ['ru', t], en = t => ['en', t];
   const lines = [];
   const PRAISE = ['Молодец!', 'Правильно!', 'Ура!', 'Отлично!', 'Супер!'];
   [ 'Найди', 'Перетащи картинку к её тени!', 'Что здесь лишнее? Нажми!', 'Каких букв не хватает?', 'Найди букву', 'С какой буквы начинается', '?',
     'Три подряд! Бонус!', 'Не спеши. Послушай ещё раз.', 'Посмотри, вот здесь!', 'Попробуй ещё!', 'Без единой ошибки! Золотая звезда!', 'Урок пройден!',
-    'Можно купить стикер!', 'Обведи буквы', 'в слове', 'Обведи маленькую букву', 'Обведи букву', 'Собери картинку!', 'Запомни!', 'Найди парочки!', 'Жми на кнопку, чтобы ехать быстрее!', 'Собирай монеты!', 'Финиш!', 'Ты первый!',
+    'Можно купить стикер!', 'Обведи буквы', 'в слове', 'Обведи букву', 'Обведи!', 'Собери картинку!', 'Запомни!', 'Найди парочки!', 'Жми на кнопку, чтобы ехать быстрее!', 'Собирай монеты!', 'Финиш!', 'Ты первый!',
     'Собери шарики одного цвета в ряд!', 'Поставь шарики по порядку, чтобы получилось слово!', 'Нажми на шарик!', 'А теперь — куда его поставить!',
     'Ура! Новый стикер!', 'И новый альбом!', 'Ещё немного монет! Пойдём играть?', 'Ты собрал весь набор!', 'Тебе кубок!', 'Привет!', 'Кто играет?', 'Привет! Это проверка.', 'Монетки за то, что пришёл!', ...PRAISE,
   ].forEach(t => lines.push(ru(t)));
@@ -80,13 +83,36 @@ function allLines({ SETS, LETTERS, CHUNKS }) {
     lines.push(en(s + '.'), en(s + ','), en(`${s}, as in ${ws.map(w => w[0]).join(', and ')}.`), en(`${s}, as in ${ws[0][0]}.`));
   });
   words.forEach(w => lines.push(en(w), en(w + '.'), en(w + '!')));
+  SHAPES.forEach(([name]) => lines.push(en(name)));   // the shapes traced on level 1
   lines.push(en('Hello!'), en('Hello! This is a test.'));
   lines.push(en('Three!'), en('Two!'), en('One!'), en('Go!'));   // the race countdown
   return lines;
 }
 
+// ---- one loudness for every clip. The voices and models come out at very different levels (measured 2026-11-13: the
+// Russian voice about 19 dB below the English one, the eleven_v3 lines above both), so every clip is brought to the
+// same mean level with ffmpeg: LEVEL_DB is where the English clips were. The gain stops where the peak would clip.
+// A clip already within 1 dB is left alone, so the step can be run again and again. Needs ffmpeg on the PATH.
+const { spawnSync } = require('child_process');
+const LEVEL_DB = -21, PEAK_DB = -1;
+let noFfmpeg = false;
+function level(f) {
+  if (noFfmpeg) return 0;
+  const m = spawnSync('ffmpeg', ['-hide_banner', '-nostats', '-i', f, '-af', 'volumedetect', '-f', 'null', '-'], { encoding: 'utf8' });
+  if (m.error) { noFfmpeg = true; console.error('ffmpeg not found: the clips keep the level they were recorded at'); return 0; }
+  const mean = +(/mean_volume: (-?[\d.]+)/.exec(m.stderr) || [])[1], max = +(/max_volume: (-?[\d.]+)/.exec(m.stderr) || [])[1];
+  if (!isFinite(mean) || !isFinite(max)) return 0;
+  const gain = Math.min(LEVEL_DB - mean, PEAK_DB - max);
+  if (Math.abs(gain) < 1) return 0;
+  const tmp = f + '.tmp.mp3';
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-nostats', '-y', '-i', f, '-af', `volume=${gain.toFixed(1)}dB`, '-ac', '1', '-ar', '44100', '-c:a', 'libmp3lame', '-b:a', '64k', tmp], { encoding: 'utf8' });
+  if (r.status !== 0) { try { fs.unlinkSync(tmp); } catch (e) {} console.error('level FAILED', f); return 0; }
+  fs.renameSync(tmp, f);
+  return gain;
+}
+
 // ---- render
-const key = ([lang, text]) => lang + '|' + text;
+const key =([lang, text]) => lang + '|' + text;
 const file = k => crypto.createHash('md5').update(k).digest('hex').slice(0, 10) + '.mp3';
 async function tts(lang, text) {
   const model = modelOf(lang, text);
@@ -107,12 +133,24 @@ async function tts(lang, text) {
   const todo = uniq.filter(l => (!ONLY_LANG || l[0] === ONLY_LANG) && (redo ? redo.has(key(l)) : FORCE || !fs.existsSync(path.join(OUT, file(key(l))))));
   console.log(`${uniq.length} lines, ${todo.length} to render`);
   if (LIST) { todo.forEach(([lang, text]) => console.log(lang, text)); writeManifest(uniq); return; }
+  // --level: bring the clips that exist to one loudness, no API calls
+  if (LEVEL) {
+    let changed = 0;
+    uniq.filter(l => !ONLY_LANG || l[0] === ONLY_LANG).forEach(l => {
+      const f = path.join(OUT, file(key(l)));
+      if (!fs.existsSync(f)) return;
+      const g = level(f);
+      if (g) { changed++; console.log(`${g > 0 ? '+' : ''}${g.toFixed(1)} dB  ${l[0]} ${l[1]}`); }
+    });
+    console.log(`levelled ${changed} clips to ${LEVEL_DB} dB`);
+    writeManifest(uniq); return;
+  }
   let made = 0, chars = 0, failed = 0;
   const queue = todo.slice();
   await Promise.all(Array.from({ length: 2 }, async () => {
     for (let l; (l = queue.shift());) {
       const [lang, text] = l;
-      try { fs.writeFileSync(path.join(OUT, file(key(l))), await tts(lang, text)); made++; chars += text.length; process.stdout.write(`${lang} ${text}\n`); }
+      try { const f = path.join(OUT, file(key(l))); fs.writeFileSync(f, await tts(lang, text)); level(f); made++; chars += text.length; process.stdout.write(`${lang} ${text}\n`); }
       catch (e) { failed++; console.error('FAILED', lang, text, e.message.slice(0, 200)); }
     }
   }));

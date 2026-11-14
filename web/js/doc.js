@@ -6,7 +6,7 @@
 //   migrateDoc(doc)        a document of an older format -> the format this app writes
 // The name of the child is not in the document: the cloud holds no personal data of a child.
 
-export const SCHEMA = 1;   // the format this app reads and writes
+export const SCHEMA = 2;   // the format this app reads and writes. 2: prog.abc, the letters path (2026-11-13)
 
 const obj = v => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
 const arr = v => (Array.isArray(v) ? v : []);
@@ -22,7 +22,7 @@ export function toDoc(g) {
     bought: obj(g.bought),
     scenes: obj(g.scenes),
     rewarded: arr(g.rewarded),
-    prog: { main: obj(prog.main), lvl2: obj(prog.lvl2) },
+    prog: { main: obj(prog.main), abc: obj(prog.abc), lvl2: obj(prog.lvl2) },
     lvl2open: !!g.lvl2open,
     lastTrack: g.lastTrack || 'main',
     stats,
@@ -50,7 +50,7 @@ export function fromDoc(doc, local) {
     unlocked: [], rewarded: arr(d.rewarded),
     stats: obj(d.stats),
     limit: num(s.limit), limitSet: true, day: t.day || '', usedMs: num(t.usedMs),
-    prog: { main: obj(obj(d.prog).main), lvl2: obj(obj(d.prog).lvl2) }, progV: 2,
+    prog: { main: obj(obj(d.prog).main), abc: obj(obj(d.prog).abc), lvl2: obj(obj(d.prog).lvl2) }, progV: 3,
     lvl2open: !!d.lvl2open, lastTrack: d.lastTrack || 'main',
     stickHint: !!a.hint, lastScene: a.last || null,
     lang: s.lang || '', musicVol: num(s.musicVol, 50), music: num(s.musicVol, 50) > 0, voiceVol: num(s.voiceVol, 100), sfxVol: num(s.sfxVol, 100),
@@ -60,8 +60,22 @@ export function fromDoc(doc, local) {
 }
 
 /* ================= formats ================= */
-// MIGRATIONS[n] turns a document of format n + 1 into format n + 2. Empty while there is one format.
-const MIGRATIONS = [];
+// MIGRATIONS[n] turns a document of format n + 1 into format n + 2.
+const MIGRATIONS = [
+  // 1 -> 2: the letters left level 1 for a path of their own, prog.abc. The 16 letters were the 2nd and 4th lesson of
+  // the 8 themes (circles theme * 10 + 2 and + 6); on the new path a letter is at group * 6 + 0 or + 2 and its game
+  // right after. A child who was already on the letter teams keeps every level open. The same rule as in state.js.
+  d => {
+    const p = obj(d.prog), main = obj(p.main), abc = Object.assign({}, obj(p.abc));
+    for (let li = 0; li < 16; li++) {
+      const g = li >> 1, was = main[g * 10 + (li % 2 ? 6 : 2)], i = g * 6 + (li % 2 ? 2 : 0);
+      if (was) { abc[i] = abc[i] || was; abc[i + 1] = abc[i + 1] || 'ok'; }
+    }
+    d.prog = { main, abc, lvl2: obj(p.lvl2) };
+    if (Object.keys(d.prog.lvl2).length) d.lvl2open = true;
+    return d;
+  },
+];
 // null: the document is newer than this app understands; it is neither read nor written (5.4)
 export function migrateDoc(doc) {
   let d = copy(obj(doc)), v = num(d.schema, 1);
@@ -74,7 +88,7 @@ export function migrateDoc(doc) {
 // nothing bought, no lesson done, no task answered; the starting coins do not count (4.3)
 export function isEmptyDoc(doc) {
   const d = obj(doc), p = obj(d.prog);
-  return !Object.values(obj(d.bought)).some(n => n > 0) && !Object.keys(obj(p.main)).length && !Object.keys(obj(p.lvl2)).length && !num(obj(d.stats).tasks);
+  return !Object.values(obj(d.bought)).some(n => n > 0) && !Object.keys(obj(p.main)).length && !Object.keys(obj(p.abc)).length && !Object.keys(obj(p.lvl2)).length && !num(obj(d.stats).tasks);
 }
 // "32 words · 14 stickers · 3 albums"
 export function countsOf(doc) {
@@ -92,7 +106,7 @@ export function mergeDoc(a, b) {
   const maxMap = (x, y) => { const out = Object.assign({}, obj(y)); Object.entries(obj(x)).forEach(([k, n]) => { out[k] = Math.max(num(n), num(out[k])); }); return out; };
   // lessons: done on either device is done; gold beats ok
   const prog = {};
-  ['main', 'lvl2'].forEach(tr => {
+  ['main', 'abc', 'lvl2'].forEach(tr => {
     const x = obj(obj(L.prog)[tr]), y = obj(obj(E.prog)[tr]); prog[tr] = Object.assign({}, y, x);
     Object.keys(prog[tr]).forEach(i => { if (x[i] === 'gold' || y[i] === 'gold') prog[tr][i] = 'gold'; });
   });

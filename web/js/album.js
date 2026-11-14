@@ -4,6 +4,8 @@ import { Cloud } from './cloud.js';
 import { $, frame, pt, rectIn, capture } from './stage.js';
 import { U } from './session.js';
 import { S, save, sceneOpen, timeUp, parentAcc, parentDat } from './state.js';
+import { stickerLocked } from './premium.js';
+import { openParent } from './parent.js';
 import { SCENES, SETS, STICKERS, STICKER_FX, MAX_MOVING, pic, iconOf } from './data.js';
 import { BG } from './gen/art.js';
 import { I } from './icons.js';
@@ -97,6 +99,7 @@ function renderShelf() {
 }
 // on entering: the stickers the coins are enough for hop once, one after another (features/stick.md 4)
 function hopAffordable() {
+  if (stickerLocked(U.sceneId)) return;
   [...$('shelf').querySelectorAll('.tk:not(.have)')].filter(t => S.coins >= STICKERS[t.dataset.k].price)
     .forEach((t, i) => setTimeout(() => { t.classList.remove('hop'); void t.offsetWidth; t.classList.add('hop'); }, 400 + i * 160));
 }
@@ -218,23 +221,27 @@ function startTrial(k, q) {
   cancelTrial(true);
   if (timeUp()) return;
   hideTools();
-  const st = STICKERS[k], enough = S.coins >= st.price;
+  // an album outside the free plan: the sticker can be tried on, but a lock stands where the coin button would be
+  // (features/stick.md 7); it calls the grown-up, with no price and no "buy" on the child's side
+  const st = STICKERS[k], locked = stickerLocked(st.set), enough = !locked && S.coins >= st.price;
   const el = document.createElement('div');
   el.className = 'placed trial ' + st.rarity; el.innerHTML = pic(st);
   el._it = { k, x: clampX(q.x), y: clampY(q.y), s: 1, r: 0, f: false, z: topZ() + 2 };
   applyT(el);
   const ui = document.createElement('div'); ui.className = 'trialui';
-  ui.innerHTML = enough ? `<button class="buybtn" id="buybtn">${I.coin}<span>${st.price}</span></button>`
+  ui.innerHTML = locked ? `<button class="buybtn paylock" id="paybtn">${I.lock}</button>`
+    : enough ? `<button class="buybtn" id="buybtn">${I.coin}<span>${st.price}</span></button>`
     : `<div class="need"><i style="width:${Math.min(100, S.coins / st.price * 100)}%"></i></div>`;
   ui.style.zIndex = el._it.z + 1;
   $('page').append(el, ui);
   el.animate([{ scale: .3 }, { scale: 1.1 }, { scale: 1 }], { duration: 260 });
-  trial = { k, el, ui, timer: null };
+  trial = { k, el, ui, timer: null, locked };
   placeUi();
   renderShelf();
   dragTrial(el);
   ui.addEventListener('pointerdown', ev => ev.stopPropagation());
-  if (enough) { $('buybtn').onclick = ev => { ev.stopPropagation(); buyTrial(); }; nameSticker(k); }
+  if (locked) { $('paybtn').onclick = ev => { ev.stopPropagation(); sfx.pop(); openParent('premium'); }; nameSticker(k); }
+  else if (enough) { $('buybtn').onclick = ev => { ev.stopPropagation(); buyTrial(); }; nameSticker(k); }
   else {
     // not enough coins: it was fine to look; it slides back and Play comes in its place (no red, no "wrong" sound)
     say(en(st.w));
@@ -266,7 +273,7 @@ function dragTrial(el) {
     // dragged back onto the shelf: no
     if (el._it.y > 620) { cancelTrial(); return; }
     el._it.x = clampX(el._it.x); el._it.y = clampY(el._it.y); applyT(el); placeUi();
-    if (!moved) { if (S.coins < STICKERS[trial.k].price) notEnough(); else nameSticker(trial.k); }
+    if (!moved) { if (!trial.locked && S.coins < STICKERS[trial.k].price) notEnough(); else nameSticker(trial.k); }
   };
   el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
 }
@@ -298,7 +305,7 @@ function notEnough() {
 }
 // the coin button: the only thing that spends coins
 function buyTrial() {
-  if (!trial || timeUp()) return;
+  if (!trial || trial.locked || timeUp()) return;
   const { k, el } = trial, st = STICKERS[k], set = setOf(st.set);
   const got = buySticker(st);
   if (!got) return;

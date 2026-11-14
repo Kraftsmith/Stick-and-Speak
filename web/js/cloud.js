@@ -1,6 +1,6 @@
 // The parent's account and the cloud copy of the progress (Specs/features/cloud-sync.md, startup.md 4.3).
-// The device is the source of truth, the cloud is a copy: every screen reads and writes the local game as before;
-// this module watches it, sends it to the server in the background and takes in what another device sent.
+// The account is the source of truth, the device keeps a working copy: every screen reads and writes the local game;
+// this module watches it, sends it to the server in the background and takes in what the account has.
 // Nothing here is ever shown to the child and nothing waits for the network. Without a sign-in the module sleeps.
 //
 //   sticker-account   { id, email, token, pending, needsLogin, ahead, savedAt, deletes }   the signed-in parent
@@ -335,6 +335,9 @@ export function forget(id) {
   acct.deletes = [...(acct.deletes || []), id]; keep(); pushSoon();
 }
 
+// a request under the parent's session for another module (premium.js); without an account it answers 401
+export const call = (method, path, body) => acct ? request(method, path, body) : Promise.resolve({ status: 401, data: null });
+
 /* ================= testing ================= */
 export async function cloudDocs() { const r = await request('GET', '/api/profiles'); return r.status === 200 ? r.data : { error: r.status }; }
 // the playing profile pretends to have grown from an older version: the write must come back as a conflict and merge
@@ -375,4 +378,4 @@ export function bootPull() {
 }
 
 export const Cloud = { init, bootPull, onProfile, pull, push, pushSoon, markDirty, account, status, onChange, providers, sendCode, verifyCode, social, resume,
-  link, choose, signOut, deleteAccount, forget, sim, setSim, lastPull, cloudDocs, forceConflict, forgetVersions };
+  link, choose, signOut, deleteAccount, forget, call, sim, setSim, lastPull, cloudDocs, forceConflict, forgetVersions };

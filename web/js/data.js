@@ -52,7 +52,7 @@ THEME_ORDER.forEach(t => THEMES[t].forEach(([w, e]) => WORD_INFO[w] = { w, e, th
 // any word: a sticker's artwork, else a lesson-word picture from img/stickers/words/, else its emoji
 export const picOf = (w, e) => WORD_INFO[w] ? pic(WORD_INFO[w]) : (ART.words || []).includes(slug(w)) ? pic({ img: `img/stickers/words/${slug(w)}.png` }) : e;
 
-// Letters in phonics order: two per theme
+// Letters in phonics order, two per group of level 2 (Specs/levels/level-2.md). Level 1 has no letters.
 export const LETTERS = [
   ['S',[['sun','☀️'],['socks','🧦']]], ['A',[['apple','🍎'],['ant','🐜']]], ['T',[['tiger','🐅'],['turtle','🐢']]],
   ['P',[['pig','🐖'],['pizza','🍕']]], ['I',[['insect','🪲']]], ['N',[['nose','👃'],['nest','🪺']]],
@@ -61,6 +61,27 @@ export const LETTERS = [
   ['H',[['horse','🐎'],['hippo','🦛']]], ['R',[['rabbit','🐇'],['robot','🤖']]],
   ['B',[['ball','⚽'],['bed','🛏️']]], ['F',[['fox','🦊'],['fish','🐟']]],
 ];
+export const LETTER_WORD = {};   // example word of a letter -> its emoji
+LETTERS.forEach(([, ws]) => ws.forEach(([w, e]) => { LETTER_WORD[w] = e; }));
+// Shapes traced on level 1, one per theme, from easy to hard: the strokes letters are made of (levels/level-1.md).
+// [English name, SVG path on the 600×600 trace card]
+const starPath = (() => {
+  const p = [];
+  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 92 : 215; p.push(`${Math.round(300 + r * Math.cos(a))} ${Math.round(315 + r * Math.sin(a))}`); }
+  return 'M' + p.join(' L') + ' Z';
+})();
+export const SHAPES = [
+  ['line', 'M300 105 L300 495'],
+  ['circle', 'M300 110 A190 190 0 1 1 300 490 A190 190 0 1 1 300 110 Z'],
+  ['wave', 'M75 300 C150 110 225 110 300 300 S450 490 525 300'],
+  ['cross', 'M300 105 L300 495 M105 300 L495 300'],
+  ['square', 'M125 125 H475 V475 H125 Z'],
+  ['triangle', 'M300 115 L495 470 L105 470 Z'],
+  ['zigzag', 'M85 445 L192 160 L300 445 L408 160 L515 445'],
+  ['star', starPath],
+];
+// the shape as the picture in a circle of the lesson path
+export const shapeIcon = i => `<svg class="ic" viewBox="0 0 600 600" aria-hidden="true"><path d="${SHAPES[i][1]}" fill="none" stroke="#f28743" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 export const PZ_COLORS = ['#ffd36b','#b8f0a0','#b9c8ff','#9fe0ff','#d8f3c8','#ffd0b5','#ffe9a8','#ffc9ec'];
 // puzzle levels: [cols, rows, ghost underlay]
 export const PZ_LEVELS = [[2,2,false],[3,2,false],[3,3,true]];   // 4, 6, 9 pieces
@@ -92,24 +113,33 @@ export function mkTrack(title, sayTxt, islands) {
 }
 // a game on the path: its own circle right after the lesson it belongs to (SPEC 3.1)
 const game = (g, of) => ({ kind: 'game', game: g, of, theme: of.theme, level: of.level, icon: I[g] });
-// ONE progression. Words, letters and puzzles are task types mixed inside lessons; pairs, lines and the race are
-// circles of their own. Theme = 5 lessons, a game after each: words 1–4, pairs, 1st letter, lines, words 5–8, pairs,
-// 2nd letter, lines, review, race. Two letters per theme in phonics order.
+// Level 1: words only (decided 2026-11-13: letters are too early here). Words, shapes and puzzles are task types
+// mixed inside lessons; pairs, lines and the race are circles of their own. Theme = 5 lessons, a game after each:
+// words 1–4, pairs, the theme's shape, lines, words 5–8, pairs, the shape again, lines, review, race.
+// The circles keep the places they had when the 2nd and 4th lesson taught a letter, so saved progress still fits.
 export const PZ_LEVEL_BY_THEME = [1, 1, 2, 2, 2, 3, 3, 3];
 export const TRACKS = {
   main: mkTrack('Learn', 'Поехали учиться!', THEME_ORDER.map((t, ti) => {
-    const level = PZ_LEVEL_BY_THEME[ti], l1 = ti * 2, l2 = ti * 2 + 1;
+    const level = PZ_LEVEL_BY_THEME[ti];
     return { icon: THEME_META[t][0], set: SETS.find(s => s.id === t), label: THEME_META[t][1], lessons: [
       { kind: 'words', theme: t, ti, part: 0, level, icon: THEMES[t][0][1] },
-      { kind: 'letter', theme: t, ti, li: l1, level, icon: LETTERS[l1][0] },
+      { kind: 'shape', theme: t, ti, part: 0, level, icon: shapeIcon(ti) },
       { kind: 'words', theme: t, ti, part: 1, level, icon: THEMES[t][4][1] },
-      { kind: 'letter', theme: t, ti, li: l2, level, icon: LETTERS[l2][0] },
-      { kind: 'review', theme: t, ti, letters: [l1, l2], level, icon: I.review },
-    ].flatMap(l => [l, game({ words: 'pairs', letter: 'lines', review: 'race' }[l.kind], l)]) };
+      { kind: 'shape', theme: t, ti, part: 1, level, icon: shapeIcon(ti) },
+      { kind: 'review', theme: t, ti, level, icon: I.review },
+    ].flatMap(l => [l, game({ words: 'pairs', shape: 'lines', review: 'race' }[l.kind], l)]) };
   })),
 };
+// Level 2: letters, two per group: letter A, lines, letter B, lines, review, race (Specs/levels/level-2.md).
+// A letter's circles are at group * 6 + (0 | 2), its lines right after: state.js and doc.js move old progress there.
+TRACKS.abc = mkTrack('Level 2', 'Буквы! Поехали!', Array.from({ length: LETTERS.length / 2 }, (_, g) => {
+  const a = g * 2, b = a + 1, level = g < 4 ? 2 : 3;
+  const A = { kind: 'letter', li: a, level, icon: LETTERS[a][0] }, B = { kind: 'letter', li: b, level, icon: LETTERS[b][0] };
+  const R = { kind: 'letters', lis: [a, b], level, icon: I.review };
+  return { icon: LETTERS[a][1][0][1], label: LETTERS[a][0] + ' · ' + LETTERS[b][0], lessons: [A, game('lines', A), B, game('lines', B), R, game('race', R)] };
+}));
 
-/* ---- Level 2: letter teams — two letters that make one sound ("oy" as in "boy") ----
+/* ---- Level 3: letter teams — two letters that make one sound ("oy" as in "boy") ----
    [team, how the voice says the sound, example words]. Words are drawn by emoji, so each must be unambiguous. */
 export const CHUNKS = [
   ['sh', 'shh', [['ship','🚢'],['shell','🐚']]],
@@ -145,10 +175,10 @@ export function chunkTiles(w, upTo) {
 export const linesChunkWords = (cis, upTo) => cis.flatMap(ci => CHUNKS[ci][2].map(x => x[0]))
   .filter(w => { const n = chunkTiles(w, upTo).length; return n >= 3 && n <= 4; });
 
-// Level 2 path: 6 groups × (team A, team B, lines, review, pairs, race). Lines: each letter team is one ball
+// Level 3 path (the track is still called lvl2 in saved games): 6 groups × (team A, team B, lines, review, pairs, race). Lines: each letter team is one ball
 // (Lines.md 9, q. 6), so the circle is there only if at least two words of the group make 3–4 balls
 // (not "oy · ow": boy, cow, owl are two balls, oyster five).
-TRACKS.lvl2 = mkTrack('Level 2', 'Второй уровень! Поехали!', [0, 1, 2, 3, 4, 5].map(g => {
+TRACKS.lvl2 = mkTrack('Level 3', 'Второй уровень! Поехали!', [0, 1, 2, 3, 4, 5].map(g => {
   const a = g * 2, b = g * 2 + 1, level = g < 3 ? 2 : 3;
   const B = { kind: 'chunk', ci: b, level, icon: CHUNKS[b][0] }, R = { kind: 'chunkreview', cis: [a, b], level, icon: I.review };
   return { icon: CHUNKS[a][2][0][1], label: CHUNKS[a][0] + ' · ' + CHUNKS[b][0], lessons: [
@@ -157,7 +187,8 @@ TRACKS.lvl2 = mkTrack('Level 2', 'Второй уровень! Поехали!',
     R, game('pairs', R), game('race', R),
   ] };
 }));
-export const LEVELS = [['main', 'Level 1'], ['lvl2', 'Level 2']];
+// the levels in order; each opens when the one before it is finished (state.js levelOpen)
+export const LEVELS = [['main', 'Level 1'], ['abc', 'Level 2'], ['lvl2', 'Level 3']];
 
 // Album pages: one per sticker set. A page opens when the first sticker of its set is bought.
 export const SCENES = [
@@ -231,4 +262,4 @@ export const ECON = {
 // what the voice says after a correct answer
 export const PRAISE = ['Молодец!', 'Правильно!', 'Ура!', 'Отлично!', 'Супер!'];
 // the emoji of any lesson word (level 1 themes and level 2 letter teams)
-export const emojiOf = w => WORD_INFO[w] ? WORD_INFO[w].e : CHUNK_WORD[w] ? CHUNK_WORD[w].e : '';
+export const emojiOf = w => WORD_INFO[w] ? WORD_INFO[w].e : CHUNK_WORD[w] ? CHUNK_WORD[w].e : LETTER_WORD[w] || '';

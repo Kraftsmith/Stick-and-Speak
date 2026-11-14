@@ -7,6 +7,8 @@ import { I } from './icons.js';
 import { sfx } from './audio.js';
 import { go, onEnter } from './nav.js';
 import { startLesson } from './lessons.js';
+import { Premium, lessonLocked } from './premium.js';
+import { openParent } from './parent.js';
 
 // "Play" on the home screen opens the path, on the level the child played last
 $('playBtn').onclick = () => { sfx.pop(); U.pathTr = S.lastTrack && TRACKS[S.lastTrack] && levelOpen(S.lastTrack) ? S.lastTrack : 'main'; go('path'); };
@@ -22,11 +24,13 @@ function renderPath() {
   // a single line of circles joined by connectors; a small theme tag sits above the first lesson of each theme
   const firstOf = {}; T.islands.forEach(is => firstOf[is.idx[0]] = is);
   $('islands').innerHTML = '<div class="pline">' + T.lessons.map((ls, i) => {
-    const st = S.prog[U.pathTr][i], cls = st ? 'done' : i === cur ? 'cur' : 'locked';
+    // the next lesson past the free twenty waits for a grown-up: a lock, not the orange circle (subscription.md 3)
+    const st = S.prog[U.pathTr][i], pay = !st && i === cur && lessonLocked(U.pathTr, i);
+    const cls = st ? 'done' : pay ? 'pay' : i === cur ? 'cur' : 'locked';
     const is = firstOf[i];
     return (i ? `<div class="conn ${st ? 'done' : ''}"></div>` : '') +
       `<div class="lwrap">${is ? `<div class="ttag">${is.set ? iconOf(is.set) : is.icon}<small>${is.label}</small></div>` : ''}
-        <button class="ln ${cls}" data-i="${i}">${ls.kind === 'words' ? picOf(THEMES[ls.theme][ls.part ? 4 : 0][0], ls.icon) : ls.icon}${st ? `<span class="mk">${st === 'gold' ? I.gold : I.star}</span>` : ''}</button></div>`;
+        <button class="ln ${cls}" data-i="${i}">${ls.kind === 'words' ? picOf(THEMES[ls.theme][ls.part ? 4 : 0][0], ls.icon) : ls.icon}${st ? `<span class="mk">${st === 'gold' ? I.gold : I.star}</span>` : pay ? `<span class="mk">${I.lock}</span>` : ''}</button></div>`;
   }).join('') + '</div>';
   // centre the U.current lesson
   const box = $('islands'), target = box.querySelector(`.ln[data-i="${Math.min(cur, T.lessons.length - 1)}"]`);
@@ -35,8 +39,11 @@ function renderPath() {
     if (box._dragged) return;
     const i = +b.dataset.i;
     if (b.classList.contains('locked')) { sfx.no(); return; }
+    // no price and no "buy" on the child's side: the lock calls the grown-up and leads to the parent lock
+    if (b.classList.contains('pay')) { sfx.pop(); openParent('premium'); return; }
     // a done lesson starts the new one: a child taps any circle just to play. Once the level is finished, it replays.
-    sfx.pop(); startLesson(U.pathTr, cur < T.lessons.length ? cur : i);
+    // ...unless the new one is locked: then the finished lesson itself is played again
+    sfx.pop(); startLesson(U.pathTr, cur < T.lessons.length && !lessonLocked(U.pathTr, cur) ? cur : i);
   });
 }
 
@@ -53,3 +60,5 @@ function renderPath() {
   box.addEventListener('pointerup', end); box.addEventListener('pointercancel', end); box.addEventListener('pointerleave', end);
 })();
 onEnter('path', renderPath);
+// premium came or went while the path is open: the lock appears or leaves without a sound
+Premium.onChange(() => { if (U.current === 'path') renderPath(); });

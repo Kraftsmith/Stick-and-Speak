@@ -1,7 +1,7 @@
-// Trace a letter, a letter team or a word: free-hand drawing over the outline on a canvas.
+// Trace a letter, a letter team, a word or a shape: free-hand drawing over the outline on a canvas.
 import { $, pt, rectIn, capture } from './stage.js';
 import { U } from './session.js';
-import { LETTERS, CHUNKS, sndOf } from './data.js';
+import { LETTERS, CHUNKS, SHAPES, sndOf } from './data.js';
 import { I } from './icons.js';
 import { say, ru, en, sfx } from './audio.js';
 import { go } from './nav.js';
@@ -26,6 +26,7 @@ function traceFit(text, W, H) {
 function drawGlyph(ctx, ch, mode) {
   const { W, H, px, k } = T;
   ctx.clearRect(0, 0, W, H);
+  if (T.shape) return drawShape(ctx, mode);
   ctx.font = letterFont(px); ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   const m = ctx.measureText(ch), y = H / 2 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2;
   ctx.lineJoin = 'round'; ctx.lineCap = 'round';
@@ -44,6 +45,23 @@ function drawGlyph(ctx, ch, mode) {
     if (mode === 'zone') { ctx.lineWidth = TR.TOL * 2 * k; ctx.strokeStyle = '#000'; ctx.strokeText(mid, xm, y); }
   }
 }
+// a shape of level 1 (data.js SHAPES): a thick line to follow instead of a filled letter. The path is drawn on the
+// 600×600 card, scaled around the centre for the smaller repeat.
+const SHAPE_W = 46;
+function drawShape(ctx, mode) {
+  const p = T.shape;
+  ctx.save();
+  ctx.translate(T.W / 2, T.H / 2); ctx.scale(T.k, T.k); ctx.translate(-300, -300);
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  if (mode === 'guide') {
+    ctx.strokeStyle = '#f1e7d6'; ctx.lineWidth = SHAPE_W; ctx.stroke(p);
+    ctx.setLineDash([14, 14]); ctx.lineWidth = 5; ctx.strokeStyle = '#b9a383'; ctx.stroke(p); ctx.setLineDash([]);
+  } else {
+    ctx.strokeStyle = mode === 'done' ? '#5fc27a' : '#000';
+    ctx.lineWidth = mode === 'zone' ? SHAPE_W + TR.TOL * 2 : SHAPE_W; ctx.stroke(p);
+  }
+  ctx.restore();
+}
 function glyphMask(ch, mode) {
   const c = document.createElement('canvas'); c.width = T.W; c.height = T.H;
   const x = c.getContext('2d'); drawGlyph(x, ch, mode);
@@ -53,7 +71,10 @@ function startTrace(task) {
   if (U.current !== 'trace') go('trace');
   if (U.current !== 'trace') return;
   let ch, id, phrase, after;
-  if (task.text) {                       // level 2: a letter team ("oy") or a word ("boy")
+  if (task.shape != null) {              // level 1: a shape, named in English
+    const name = SHAPES[task.shape][0]; ch = ''; id = name;
+    phrase = [ru('Обведи!'), en(name)]; after = [en(name)];
+  } else if (task.text) {                // level 3: a letter team ("oy") or a word ("boy")
     ch = task.text; id = CHUNKS[task.ci][0];
     const team = task.text === CHUNKS[task.ci][0];
     // in a word only the team's letters are traced: "ch" in "chick"
@@ -70,7 +91,8 @@ function startTrace(task) {
   ['tguide', 'tink'].forEach(id => { const c = $(id); c.width = W; c.height = H; });
   const px = traceFit(ch, W, H);
   const at = task.text && task.ci != null ? ch.indexOf(CHUNKS[task.ci][0]) : -1;
-  T = { ch, W, H, px, k: px / 460, pts: [], zone: null, ink: 0, off: 0, last: null,
+  const shape = task.shape != null ? new Path2D(SHAPES[task.shape][1]) : null;
+  T = { ch, W, H, px, k: shape ? (task.small ? .62 : 1) : px / 460, shape, pts: [], zone: null, ink: 0, off: 0, last: null,
         hl: at >= 0 ? [at, at + CHUNKS[task.ci][0].length] : null };
   $('tdots').innerHTML = dotsHtml();
   $('tstreak').innerHTML = U.streak > 0 ? I.fire.repeat(Math.min(U.streak % 3 || 3, 3)) : '';
